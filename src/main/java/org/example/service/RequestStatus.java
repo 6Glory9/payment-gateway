@@ -1,6 +1,6 @@
 package org.example.service;
 
 public enum RequestStatus {
-    INIT, SENT, UNKNOWN, SEND_SUCCESS, SEND_FAILED;
+    SENT, TIME_OUT, UNKNOWN, SEND_SUCCESS, SEND_FAILED
 }
 
