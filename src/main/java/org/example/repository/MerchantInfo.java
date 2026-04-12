@@ -11,17 +11,20 @@ public class MerchantInfo implements Serializable {
 
     private String merchantNo;
 
+    private String issuerId;
+
+    private String channelUrl;
+
+
     private String algorithmType;
 
     private String algorithmKey;
 
-    private String issuerId;
 
     private String signSerialNumber;
 
-    private String encryptionSerialNumber;
+    private String encryptionSerialNumber; //
 
-    private String channelUrl;
 
     public String generateDigitalEnvelope() {
         return "";
@@ -31,11 +34,16 @@ public class MerchantInfo implements Serializable {
         return "sign";
     }
 
-    public String encrypt(String data) {
+    public String encrypt(String algorithmType, String algorithmKey, String data) {
         return null;
     }
 
-    public String decrypt(String encryptData) {
+
+    public String getDigitalEnvelope(String digitalEnvelope) {
+        return null;
+    }
+
+    public String decrypt(String algorithmType, String algorithmKey, String encryptData) {
         return null;
     }
 
