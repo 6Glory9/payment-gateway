@@ -16,6 +16,13 @@ public class MerchantInfo implements Serializable {
     //渠道请求地址
     private String channelUrl;
 
+    //签名的类型
+    private String signType = "SM2";
+
+    //信封加解密类型
+    private String encryptDigitalEnvelopeType = "SM2";
+
+    //敏感信息对称加解密类型
     private String encryptType = "SM4";
 
     //当前商户自己的公私钥
@@ -23,12 +30,6 @@ public class MerchantInfo implements Serializable {
 
     //当前渠道的公钥
     private PublicCert currentPublicCert;
-
-    //渠道用商户公钥证书签名的序列号
-    private String channelSignSerialNumber;
-
-    //商户用的渠道证书做DigitalEnvelope加密序列号
-    private String encryptDigitalEnvelopeSerialNumber;
 
 
     //商户自己使用过的公私钥

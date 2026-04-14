@@ -3,6 +3,7 @@ package org.example.service;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import org.example.repository.DigitalEnvelope;
+import org.example.service.encode.EncryptDecryptHandler;
 
 import java.lang.reflect.Field;
 import java.util.*;
