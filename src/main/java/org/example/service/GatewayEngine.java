@@ -20,12 +20,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class GatewayEngine implements InitializingBean {
+public class GatewayEngine<UpstreamRequest extends PaymentRequest,UpstreamData> implements InitializingBean {
 
     @Autowired
-    private List<ChannelService> channelServiceList;
+    private List<ChannelService<UpstreamRequest,UpstreamData>> channelServiceList;
 
-    private static Map<String, ChannelService> mapper;
+    private  Map<String, ChannelService<UpstreamRequest,UpstreamData>> mapper;
 
     @Autowired
     private InstructionRepository instructionRepo; // 持久化层
@@ -33,9 +33,9 @@ public class GatewayEngine implements InitializingBean {
     @Autowired
     private BizDataAsyncService asyncService;     // 异步业务处理器
 
-    public PaymentResultVO execute(PaymentRequest request) {
+    public  PaymentResultVO<UpstreamData>  execute(UpstreamRequest request) {
         // 1. 寻找匹配渠道
-        ChannelService channelService = mapper.get(request.getChannelCode());
+        ChannelService<UpstreamRequest,UpstreamData> channelService = mapper.get(request.getChannelCode());
         if (channelService == null) {
             throw new RuntimeException("Unsupported Channel");
         }
@@ -52,7 +52,7 @@ public class GatewayEngine implements InitializingBean {
 
         try {
             // 3. 请求
-            PaymentResultVO result = channelService.call(request);
+            PaymentResultVO<UpstreamData> result = channelService.call(request);
 
             // 4. 更新状态
             logEntry.setRawResContent(JSONUtil.toJsonStr(result));

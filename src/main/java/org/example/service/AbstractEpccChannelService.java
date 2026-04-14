@@ -1,6 +1,7 @@
 package org.example.service;
 
 import cn.hutool.json.JSONUtil;
+import org.example.repository.DigitalEnvelope;
 import org.example.repository.MerchantCache;
 import org.example.repository.MerchantInfo;
 import org.example.utils.HttpClient;
@@ -43,13 +44,16 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
     protected abstract EpccContext<ChannelOutRequest, ChannelOutResponse> convertToChannelModel(UpstreamRequest req, MerchantInfo merchantInfo);
 
     protected void securityProcess(EpccContext<ChannelOutRequest, ChannelOutResponse> context) {
-        //生成签名
-        Root<ChannelOutRequest> root = new Root<>(context.getChannelOutRequest(), context.getMerchantInfo());
+        //生成信封
+        DigitalEnvelope digitalEnvelope = context.generateDigitalEnvelope();
+
+        Root<ChannelOutRequest> root = new Root<>(context.getChannelOutRequest(), context);
+
         String sign = context.getMerchantInfo().sign(JSONUtil.toJsonStr(root));
         context.setRequestSign(sign);
 
         //敏感信息加密
-        EncryptHandler.encrypt(root.getChannelOutRequest(), context.getMerchantInfo());
+        AbstractEncryptDecryptHandler.encrypt(root.getChannelOutRequest(), digitalEnvelope);
 
     }
 
@@ -68,10 +72,10 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
         fetchMessage(rawRes, context);
 
         //解密
-        EncryptHandler.decrypt(context.getChannelOutResponse(), context.getMerchantInfo());
+        AbstractEncryptDecryptHandler.decrypt(context.getChannelOutResponse(), context.getResponseDigitalEnvelope());
 
         //check sign
-        context.getMerchantInfo().checkSign(JSONUtil.toJsonStr(context.getReturnRoot()),context.getReturnSign());
+        context.getMerchantInfo().checkSign(JSONUtil.toJsonStr(context.getResponseRoot()), context.getResponseSign());
 
     }
 
@@ -108,7 +112,9 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
         };
 
         Root<ChannelOutResponse> returnRoot = JSONUtil.toBean(rootXML, type, false);
-        context.setReturnRoot(returnRoot);
+        context.setResponseRoot(returnRoot);
+
+        context.extractResponseDigitalEnvelope();
 
         // return rootXML + String.format("{S:%s}", sign);
         //"{S:"的长度是3
@@ -117,7 +123,7 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
 
         if (signEndIndex > signStartIndex) {
             String sign = message.substring(signStartIndex, signEndIndex); //[0,1]
-            context.setReturnSign(sign);
+            context.setResponseSign(sign);
         }
     }
 

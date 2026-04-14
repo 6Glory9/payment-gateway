@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Getter
 public class Root<ChannelOutRequest extends EpccChannelOut> implements Serializable {
 
-    private static final String DEFAULT_NAME_SPACE = "www.yiji.com";
+    private static final String DEFAULT_NAME_SPACE = "namespace_string";
 
     @JacksonXmlProperty(localName = "namespace", isAttribute = true)
     private String namespace = DEFAULT_NAME_SPACE;
@@ -23,16 +23,16 @@ public class Root<ChannelOutRequest extends EpccChannelOut> implements Serializa
     @JacksonXmlProperty(localName = "MsgBody")
     private ChannelOutRequest channelOutRequest;
 
-    public Root(ChannelOutRequest channelOutRequest, MerchantInfo merchantInfo) {
+    public Root(ChannelOutRequest channelOutRequest, EpccContext context) {
         this.channelOutRequest = channelOutRequest;
 
         header = new EpccChannelOutRequestHeader();
         header.setDirection(channelOutRequest.getDirection());
         header.setMessageType(channelOutRequest.getMessageType());
-        header.setIssuerId(merchantInfo.getIssuerId());
-        header.setEncryptionSerialNumber(merchantInfo.getEncryptionSerialNumber());
-        header.setSignSerialNumber(merchantInfo.getSignSerialNumber());
-        header.setDigitalEnvelope(merchantInfo.generateDigitalEnvelope());
+        header.setIssuerId(context.getMerchantInfo().getIssuerId());
+        header.setEncryptionSerialNumber(context.getMerchantInfo().getEncryptDigitalEnvelopeSerialNumber());
+        header.setSignSerialNumber(context.getMerchantInfo().getChannelSignSerialNumber());
+        header.setDigitalEnvelope(context.getRequestDigitalEnvelope().getBase64());
     }
 
     public Root() {

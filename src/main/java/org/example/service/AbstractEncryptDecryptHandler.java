@@ -1,31 +1,59 @@
 package org.example.service;
 
-import org.example.repository.MerchantInfo;
+import cn.hutool.crypto.asymmetric.KeyType;
+import cn.hutool.crypto.asymmetric.RSA;
+import org.example.repository.DigitalEnvelope;
 
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
-public class EncryptHandler {
+public abstract class AbstractEncryptDecryptHandler {
 
 
     // 缓存：类 -> 带 @Encrypt 的 String 字段列表
     private static final Map<Class<?>, List<Field>> FIELD_CACHE = new ConcurrentHashMap<>();
 
+    private static final Map<String, EncryptDecryptHandler> ENCRYPT_DECRYPT_HANDLER_MAP = new HashMap<>();
+
     // ------------------------------ 入口 ------------------------------
-    public static void encrypt(Object bean, MerchantInfo merchantInfo) {
-        if (bean == null) return;
-        doProcess(bean, merchantInfo::encrypt);
+    public static void encrypt(Object bean, DigitalEnvelope digitalEnvelope) {
+        if (bean == null || digitalEnvelope == null) return;
+        doProcess(bean, digitalEnvelope, ENCRYPT_DECRYPT_HANDLER_MAP.get(digitalEnvelope.getAlgorithmKey())::encrypt);
     }
 
-    public static void decrypt(Object bean, MerchantInfo merchantInfo) {
-        if (bean == null) return;
-        doProcess(bean, merchantInfo::decrypt);
+    public static void decrypt(Object bean, DigitalEnvelope digitalEnvelope) {
+        if (bean == null || digitalEnvelope == null) return;
+        doProcess(bean, digitalEnvelope, ENCRYPT_DECRYPT_HANDLER_MAP.get(digitalEnvelope.getAlgorithmKey())::decrypt);
+    }
+
+
+    public static DigitalEnvelope decryptDigitalEnvelope(String base64, String privateBase64, String type) {
+        if (type.equals("RSA")) {
+            String[] pair = new RSA(privateBase64, null).decryptStr(base64, KeyType.PrivateKey).split("|");
+            DigitalEnvelope digitalEnvelope = new DigitalEnvelope();
+            digitalEnvelope.setBase64(base64);
+            digitalEnvelope.setAlgorithmType(pair[0]);
+            digitalEnvelope.setAlgorithmKey(pair[1]);
+            return digitalEnvelope;
+
+        }
+        return null;
+
+    }
+
+
+    public static DigitalEnvelope generateDigitalEnvelope(String publicBase64, String type) {
+        if (type.equals("RSA")) {
+
+        }
+        return null;
+
     }
 
     // ------------------------------ 递归处理 ------------------------------
-    private static void doProcess(Object obj, Function<String, String> function) {
+    private static void doProcess(Object obj, DigitalEnvelope digitalEnvelope, BiFunction<String, String, String> function) {
         try {
             Class<?> clazz = obj.getClass();
             List<Field> encryptFields = getEncryptFields(clazz);
@@ -35,7 +63,7 @@ public class EncryptHandler {
                 field.setAccessible(true);
                 Object val = field.get(obj);
                 if (val instanceof String str) {
-                    field.set(obj, function.apply(str));
+                    field.set(obj, function.apply(str, digitalEnvelope.getAlgorithmKey()));
                 }
             }
 
@@ -47,14 +75,14 @@ public class EncryptHandler {
                 if (val == null) continue;
 
                 if (isCustomBean(val)) {
-                    doProcess(val, function);
+                    doProcess(val, digitalEnvelope, function);
                 } else if (val instanceof Collection<?> coll) {
                     for (Object item : coll) {
-                        if (item != null) doProcess(item, function);
+                        if (item != null) doProcess(item, digitalEnvelope, function);
                     }
                 } else if (val instanceof Map<?, ?> map) {
                     for (Object v : map.values()) {
-                        if (v != null) doProcess(v, function);
+                        if (v != null) doProcess(v, digitalEnvelope, function);
                     }
                 }
             }
