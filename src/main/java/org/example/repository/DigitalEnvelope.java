@@ -16,4 +16,12 @@ public class DigitalEnvelope implements Serializable {
 
     private String base64;
 
+    public DigitalEnvelope(String algorithmType, String algorithmKey, String base64) {
+        this.algorithmType = algorithmType;
+        this.algorithmKey = algorithmKey;
+        this.base64 = base64;
+    }
+
+    public DigitalEnvelope() {
+    }
 }

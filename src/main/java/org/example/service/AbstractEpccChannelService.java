@@ -1,5 +1,7 @@
 package org.example.service;
 
+import cn.hutool.crypto.symmetric.SymmetricDecryptor;
+import cn.hutool.crypto.symmetric.SymmetricEncryptor;
 import cn.hutool.json.JSONUtil;
 import org.example.repository.DigitalEnvelope;
 import org.example.repository.MerchantCache;
@@ -49,11 +51,12 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
 
         Root<ChannelOutRequest> root = new Root<>(context.getChannelOutRequest(), context);
 
-        String sign = context.getMerchantInfo().sign(JSONUtil.toJsonStr(root));
+        String sign = context.getSecurityService().sign(JSONUtil.toJsonStr(root));
         context.setRequestSign(sign);
 
         //敏感信息加密
-        AbstractEncryptDecryptHandler.encrypt(root.getChannelOutRequest(), digitalEnvelope);
+        SymmetricEncryptor symmetricEncryptor = context.getSecurityService().generateSymmetricEncryptor(digitalEnvelope);
+        AbstractEncryptDecryptHandler.encrypt(root.getChannelOutRequest(), symmetricEncryptor::encryptBase64);
 
     }
 
@@ -72,10 +75,12 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
         fetchMessage(rawRes, context);
 
         //解密
-        AbstractEncryptDecryptHandler.decrypt(context.getChannelOutResponse(), context.getResponseDigitalEnvelope());
+        SymmetricDecryptor symmetricDecryptor = context.getSecurityService().generateSymmetricDecryptor(context.getResponseDigitalEnvelope());
+
+        AbstractEncryptDecryptHandler.decrypt(context.getResponseRoot(), symmetricDecryptor::decryptStr);
 
         //check sign
-        context.getMerchantInfo().checkSign(JSONUtil.toJsonStr(context.getResponseRoot()), context.getResponseSign());
+        context.getSecurityService().verify(context.getResponseRoot().getHeader().getSignSerialNumber(), JSONUtil.toJsonStr(context.getResponseRoot()), context.getResponseSign());
 
     }
 

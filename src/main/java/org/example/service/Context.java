@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Getter
 public abstract class Context<ChannelOutRequest, ChannelOutResponse> implements Serializable {
 
-    private MerchantInfo merchantInfo;
+    protected MerchantInfo merchantInfo;
 
     private  ChannelOutRequest channelOutRequest;
 

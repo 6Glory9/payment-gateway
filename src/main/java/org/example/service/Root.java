@@ -30,8 +30,8 @@ public class Root<ChannelOutRequest extends EpccChannelOut> implements Serializa
         header.setDirection(channelOutRequest.getDirection());
         header.setMessageType(channelOutRequest.getMessageType());
         header.setIssuerId(context.getMerchantInfo().getIssuerId());
-        header.setEncryptionSerialNumber(context.getMerchantInfo().getEncryptDigitalEnvelopeSerialNumber());
-        header.setSignSerialNumber(context.getMerchantInfo().getChannelSignSerialNumber());
+        header.setEncryptionSerialNumber(context.getMerchantInfo().getCurrentPublicCert().getPublicCertSerialNumber());
+        header.setSignSerialNumber(context.getMerchantInfo().getCurrentPrivateCert().getPublicCert().getPublicCertSerialNumber());
         header.setDigitalEnvelope(context.getRequestDigitalEnvelope().getBase64());
     }
 

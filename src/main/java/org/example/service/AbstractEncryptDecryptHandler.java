@@ -1,14 +1,9 @@
 package org.example.service;
 
-import cn.hutool.crypto.asymmetric.KeyType;
-import cn.hutool.crypto.asymmetric.RSA;
-import org.example.repository.DigitalEnvelope;
-import org.example.service.encode.EncryptDecryptHandler;
-
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public abstract class AbstractEncryptDecryptHandler {
 
@@ -16,45 +11,21 @@ public abstract class AbstractEncryptDecryptHandler {
     // 缓存：类 -> 带 @Encrypt 的 String 字段列表
     private static final Map<Class<?>, List<Field>> FIELD_CACHE = new ConcurrentHashMap<>();
 
-    private static final Map<String, EncryptDecryptHandler> ENCRYPT_DECRYPT_HANDLER_MAP = new HashMap<>();
 
     // ------------------------------ 入口 ------------------------------
-    public static void encrypt(Object bean, DigitalEnvelope digitalEnvelope) {
-        if (bean == null || digitalEnvelope == null) return;
-        doProcess(bean, digitalEnvelope, ENCRYPT_DECRYPT_HANDLER_MAP.get(digitalEnvelope.getAlgorithmKey())::encrypt);
+    public static void encrypt(Object bean, Function<String, String> function) {
+        if (bean == null || function == null) return;
+        doProcess(bean, function);
     }
 
-    public static void decrypt(Object bean, DigitalEnvelope digitalEnvelope) {
-        if (bean == null || digitalEnvelope == null) return;
-        doProcess(bean, digitalEnvelope, ENCRYPT_DECRYPT_HANDLER_MAP.get(digitalEnvelope.getAlgorithmKey())::decrypt);
+    public static void decrypt(Object bean, Function<String, String> function) {
+        if (bean == null || function == null) return;
+        doProcess(bean, function);
     }
 
-
-    public static DigitalEnvelope decryptDigitalEnvelope(String base64, String privateBase64, String type) {
-        if (type.equals("RSA")) {
-            String[] pair = new RSA(privateBase64, null).decryptStr(base64, KeyType.PrivateKey).split("|");
-            DigitalEnvelope digitalEnvelope = new DigitalEnvelope();
-            digitalEnvelope.setBase64(base64);
-            digitalEnvelope.setAlgorithmType(pair[0]);
-            digitalEnvelope.setAlgorithmKey(pair[1]);
-            return digitalEnvelope;
-
-        }
-        return null;
-
-    }
-
-
-    public static DigitalEnvelope generateDigitalEnvelope(String publicBase64, String type) {
-        if (type.equals("RSA")) {
-
-        }
-        return null;
-
-    }
 
     // ------------------------------ 递归处理 ------------------------------
-    private static void doProcess(Object obj, DigitalEnvelope digitalEnvelope, BiFunction<String, String, String> function) {
+    private static void doProcess(Object obj, Function<String, String> function) {
         try {
             Class<?> clazz = obj.getClass();
             List<Field> encryptFields = getEncryptFields(clazz);
@@ -64,7 +35,7 @@ public abstract class AbstractEncryptDecryptHandler {
                 field.setAccessible(true);
                 Object val = field.get(obj);
                 if (val instanceof String str) {
-                    field.set(obj, function.apply(str, digitalEnvelope.getAlgorithmKey()));
+                    field.set(obj, function.apply(str));
                 }
             }
 
@@ -76,14 +47,14 @@ public abstract class AbstractEncryptDecryptHandler {
                 if (val == null) continue;
 
                 if (isCustomBean(val)) {
-                    doProcess(val, digitalEnvelope, function);
+                    doProcess(val, function);
                 } else if (val instanceof Collection<?> coll) {
                     for (Object item : coll) {
-                        if (item != null) doProcess(item, digitalEnvelope, function);
+                        if (item != null) doProcess(item, function);
                     }
                 } else if (val instanceof Map<?, ?> map) {
                     for (Object v : map.values()) {
-                        if (v != null) doProcess(v, digitalEnvelope, function);
+                        if (v != null) doProcess(v, function);
                     }
                 }
             }
