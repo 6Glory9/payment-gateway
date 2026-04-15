@@ -20,7 +20,7 @@ public class MerchantInfo implements Serializable {
     private String signType = "SM2";
 
     //信封加解密类型
-    private String encryptDigitalEnvelopeType = "SM2";
+    private String encryptDigitalEnvelopeType = "RSA";
 
     //敏感信息对称加解密类型
     private String encryptType = "SM4";

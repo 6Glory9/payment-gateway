@@ -1,6 +1,5 @@
 package org.example.service;
 
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repository.InstructionLog;
@@ -9,10 +8,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
