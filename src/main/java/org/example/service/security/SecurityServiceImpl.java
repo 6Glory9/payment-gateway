@@ -1,5 +1,6 @@
 package org.example.service.security;
 
+import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.AsymmetricCrypto;
@@ -30,7 +31,11 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public String sign(String value) {
-        return new Sign(merchantInfo.getSignType(), merchantInfo.getCurrentPrivateCert().getPrivateCertBase64(), null).signHex(value);
+        if ("SM2".equals(merchantInfo.getSignType())) {
+            return new SM2(merchantInfo.getCurrentPrivateCert().getPrivateCertBase64(), null).signHex(HexUtil.encodeHexStr(value));
+        }
+
+        return new Sign(merchantInfo.getSignType(), merchantInfo.getCurrentPrivateCert().getPrivateCertBase64(), null).signHex(HexUtil.encodeHexStr(value));
     }
 
     @Override
@@ -51,7 +56,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public DigitalEnvelope generateDigitalEnvelope() {
-        SecretKey secretKey = SecureUtil.generateKey(merchantInfo.getEncryptDigitalEnvelopeType());
+        SecretKey secretKey = SecureUtil.generateKey(merchantInfo.getEncryptType());
 
         String base64 = null;
         if (merchantInfo.getEncryptDigitalEnvelopeType().equals("SM2")) {

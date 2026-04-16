@@ -1,9 +1,9 @@
 package org.example.service;
 
-import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repository.InstructionLog;
 import org.example.repository.InstructionRepository;
+import org.example.utils.XMLUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class GatewayEngine<UpstreamRequest extends PaymentRequest,UpstreamData> implements InitializingBean {
+public class GatewayEngine<UpstreamRequest extends PaymentRequest, UpstreamData> implements InitializingBean {
 
     @Autowired
-    private List<ChannelService<UpstreamRequest,UpstreamData>> channelServiceList;
+    private List<ChannelService<UpstreamRequest, UpstreamData>> channelServiceList;
 
-    private  Map<String, ChannelService<UpstreamRequest,UpstreamData>> mapper;
+    private Map<String, ChannelService<UpstreamRequest, UpstreamData>> mapper;
 
     @Autowired
     private InstructionRepository instructionRepo; // 持久化层
@@ -30,9 +30,9 @@ public class GatewayEngine<UpstreamRequest extends PaymentRequest,UpstreamData> 
     @Autowired
     private BizDataAsyncService asyncService;     // 异步业务处理器
 
-    public  PaymentResultVO<UpstreamData>  execute(UpstreamRequest request) {
+    public PaymentResultVO<UpstreamData> execute(UpstreamRequest request) {
         // 1. 寻找匹配渠道
-        ChannelService<UpstreamRequest,UpstreamData> channelService = mapper.get(request.getChannelCode());
+        ChannelService<UpstreamRequest, UpstreamData> channelService = mapper.get(request.getChannelCode());
         if (channelService == null) {
             throw new RuntimeException("Unsupported Channel");
         }
@@ -42,7 +42,6 @@ public class GatewayEngine<UpstreamRequest extends PaymentRequest,UpstreamData> 
         logEntry.setInstructionType(channelService.getInstructionType());
         logEntry.setUpstreamRequestNo(request.getUpstreamRequestNo());
         logEntry.setMerchantNo(request.getMerchantNo());
-        logEntry.setRawResContent(JSONUtil.toJsonStr(request));
         logEntry.setRequestStatus(RequestStatus.SENT);
         logEntry.setRequestTime(LocalTime.now());
         instructionRepo.save(logEntry);
@@ -52,7 +51,6 @@ public class GatewayEngine<UpstreamRequest extends PaymentRequest,UpstreamData> 
             PaymentResultVO<UpstreamData> result = channelService.call(request);
 
             // 4. 更新状态
-            logEntry.setRawResContent(JSONUtil.toJsonStr(result));
             logEntry.setChannelNo(result.getChannelBizNo());
             logEntry.setChannelBizNo(result.getChannelBizNo());
             logEntry.setBizStatus(result.getBizStatus());
@@ -63,7 +61,6 @@ public class GatewayEngine<UpstreamRequest extends PaymentRequest,UpstreamData> 
             throw e;
         } catch (Throwable e) {
             log.error("{}请求的出现未知的问题", request.getUpstreamRequestNo(), e);
-            logEntry.setRawResContent(e.getMessage());
             logEntry.setRequestStatus(RequestStatus.UNKNOWN);
             logEntry.setBizStatus(null);
             throw e;

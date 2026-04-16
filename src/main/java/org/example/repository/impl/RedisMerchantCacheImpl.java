@@ -31,36 +31,33 @@ public class RedisMerchantCacheImpl implements MerchantCache {
     public MerchantInfo get(String merchantNo) {
         MerchantInfo merchantInfo = new MerchantInfo();
         merchantInfo.setMerchantNo(IdUtil.getSnowflake().nextIdStr());
-        merchantInfo.setChannelUrl("https://www.baidu.com");
+        merchantInfo.setChannelUrl("http://localhost:8080/epcc/notify");
         merchantInfo.setIssuerId(IdUtil.getSnowflake().nextIdStr());
 
-        merchantInfo.setCurrentPrivateCert(readPfx());
+        merchantInfo.setCurrentPrivateCert(readPfx("20260415172607_www.lloll.cn.pfx"));
 
-        merchantInfo.setCurrentPublicCert(readCer());
+        merchantInfo.setCurrentPublicCert(readCer("20260416151439_www.llmll.cn.pfx"));
 
         return merchantInfo;
     }
 
-    @SneakyThrows
-    private PublicCert readCer() {
+    @Override
+    public MerchantInfo getFromChannel(String issuerId) {
+        MerchantInfo merchantInfo = new MerchantInfo();
+        merchantInfo.setMerchantNo(IdUtil.getSnowflake().nextIdStr());
+        merchantInfo.setChannelUrl("https://www.baidu.com");
+        merchantInfo.setIssuerId(IdUtil.getSnowflake().nextIdStr());
 
-        Resource resource = new ClassPathResource("www.llmll.cn.cer");
+        merchantInfo.setCurrentPrivateCert(readPfx("20260416151439_www.llmll.cn.pfx"));
 
-
-        X509Certificate certificate = (X509Certificate) KeyUtil.readCertificate("X.509", resource.getInputStream());
-
-        PublicKey publicKey = certificate.getPublicKey();
-
-        PublicCert publicCert = new PublicCert();
-        publicCert.setPublicCertBase64(Base64.encode(publicKey.getEncoded()));
-        publicCert.setPublicCertSerialNumber(certificate.getSerialNumber().toString(16).toUpperCase());
-
-        return publicCert;
+        merchantInfo.setCurrentPublicCert(readCer("20260415172607_www.lloll.cn.pfx"));
+        return merchantInfo;
     }
 
+
     @SneakyThrows
-    private PrivateCert readPfx() {
-        Resource resource = new ClassPathResource("20260415172607_www.lloll.cn.pfx");
+    private PrivateCert readPfx(String classpath) {
+        Resource resource = new ClassPathResource(classpath);
 
         KeyStore keyStore = KeyUtil.readPKCS12KeyStore(resource.getFile(), "123456".toCharArray());
 
@@ -92,7 +89,49 @@ public class RedisMerchantCacheImpl implements MerchantCache {
         publicCert.setPublicCertBase64(Base64.encode(publicKey.getEncoded()));
         publicCert.setPublicCertSerialNumber(cert.getSerialNumber().toString(16).toUpperCase());
 
+        privateCert.setPublicCert(publicCert);
+
         return privateCert;
+    }
+
+
+    @SneakyThrows
+    private PublicCert readCer(String classpath) {
+        Resource resource = new ClassPathResource(classpath);
+
+        KeyStore keyStore = KeyUtil.readPKCS12KeyStore(resource.getFile(), "123456".toCharArray());
+
+
+        // 2. 获取第一个证书别名
+        String alias = keyStore.aliases().nextElement();
+
+        // ==========================================
+        // ✅ 第一步：获取 SM2 私钥
+        // ==========================================
+        PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, "123456".toCharArray());
+        System.out.println("========== SM2 私钥 ==========");
+        System.out.println(Base64.encode(privateKey.getEncoded()));
+
+        // ==========================================
+        // ✅ 额外：你最开始要的 证书序列号
+        // ==========================================
+        X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+        PublicKey publicKey = cert.getPublicKey();
+        System.out.println("\n========== SM2 公钥 ==========");
+        System.out.println(Base64.encode(publicKey.getEncoded()));
+
+        System.out.println("序列号(16进制): " + cert.getSerialNumber().toString(16).toUpperCase());
+
+        PrivateCert privateCert = new PrivateCert();
+        privateCert.setPrivateCertBase64(Base64.encode(privateKey.getEncoded()));
+
+        PublicCert publicCert = new PublicCert();
+        publicCert.setPublicCertBase64(Base64.encode(publicKey.getEncoded()));
+        publicCert.setPublicCertSerialNumber(cert.getSerialNumber().toString(16).toUpperCase());
+
+        privateCert.setPublicCert(publicCert);
+
+        return publicCert;
     }
 
     /**

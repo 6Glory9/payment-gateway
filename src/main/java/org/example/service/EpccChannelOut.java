@@ -1,5 +1,6 @@
 package org.example.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,8 +11,10 @@ import java.io.Serializable;
 @Getter
 public class EpccChannelOut implements Serializable {
 
+    @JsonIgnore
     private String direction = "11";
 
-    private String messageType = "messageType";
+    @JsonIgnore
+    private String messageType;
 
 }

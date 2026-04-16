@@ -6,11 +6,12 @@ import org.example.service.BizStatus;
 import org.example.service.InstructionType;
 import org.example.service.RequestStatus;
 
+import java.io.Serializable;
 import java.time.LocalTime;
 
 @Setter
 @Getter
-public class InstructionLog {
+public class InstructionLog implements Serializable {
 
 
     private String merchantNo;
@@ -34,11 +35,4 @@ public class InstructionLog {
     private LocalTime responseTime;
 
     private long duration;
-
-
-    private String rawReqContent;
-
-    private String rawResContent;
-
-
 }

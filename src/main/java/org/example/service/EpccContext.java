@@ -4,20 +4,22 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repository.DigitalEnvelope;
+import org.example.repository.MerchantInfo;
 import org.example.repository.PrivateCert;
 import org.example.service.security.SecurityService;
 
 @Setter
 @Getter
 @Slf4j
-public class EpccContext<ChannelOutRequest extends EpccChannelOut, ChannelOutResponse extends EpccChannelOut> extends Context<ChannelOutRequest, ChannelOutResponse> {
+public class EpccContext<UpstreamRequest extends PaymentRequest, UpstreamData, ChannelOutRequest extends EpccChannelOut, ChannelOutResponse extends EpccChannelOut> extends Context<UpstreamRequest, UpstreamData> {
 
+    private ChannelOutRequest channelOutRequest;
+
+    private DigitalEnvelope requestDigitalEnvelope;
 
     private Root<ChannelOutRequest> requestRoot;
 
     private String requestSign;
-
-    private DigitalEnvelope requestDigitalEnvelope;
 
 
     private Root<ChannelOutResponse> responseRoot;
@@ -27,6 +29,10 @@ public class EpccContext<ChannelOutRequest extends EpccChannelOut, ChannelOutRes
     private DigitalEnvelope responseDigitalEnvelope;
 
     private SecurityService securityService;
+
+    public EpccContext(UpstreamRequest upstreamRequest, MerchantInfo merchantInfo) {
+        super(upstreamRequest, merchantInfo);
+    }
 
 
     public DigitalEnvelope extractResponseDigitalEnvelope() {
