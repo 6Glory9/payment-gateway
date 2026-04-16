@@ -1,7 +1,7 @@
 package org.example.service;
 
 
-public interface NotifyService<ChannelOutRequest extends EpccChannelOut, ChannelOutResponse extends EpccChannelOut> {
+public interface NotifyService<ChannelInRequest extends EpccChannelOut> {
 
 
     String getChannelCode();
@@ -11,11 +11,6 @@ public interface NotifyService<ChannelOutRequest extends EpccChannelOut, Channel
         return InstructionType.CALLBACK_PUSH;
     }
 
-    /**
-     * 【核心方法】执行渠道调用
-     *
-     * @param request 平台标准的请求参数
-     * @return 统一封装的支付结果
-     */
-    ChannelOutResponse call(ChannelOutRequest request);
+
+    NotifyResultVO<ChannelInRequest> notify(String request);
 }

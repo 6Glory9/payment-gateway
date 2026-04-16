@@ -2,11 +2,11 @@ package org.example.service;
 
 import cn.hutool.crypto.symmetric.SymmetricDecryptor;
 import cn.hutool.crypto.symmetric.SymmetricEncryptor;
-import cn.hutool.json.JSONUtil;
 import org.example.repository.DigitalEnvelope;
 import org.example.repository.MerchantCache;
 import org.example.repository.MerchantInfo;
 import org.example.service.impl.ChannelReqNoService;
+import org.example.service.security.SecurityServiceImpl;
 import org.example.utils.HttpClient;
 import org.example.utils.XMLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +103,7 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
         context.setResponseRoot(returnRoot);
         context.setResponseSign(xmlParseInfo.getSignature());
 
+        context.setSecurityService(new SecurityServiceImpl(context.getMerchantInfo()));
 
         //解信封
         context.extractResponseDigitalEnvelope();
