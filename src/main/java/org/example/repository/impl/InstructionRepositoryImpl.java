@@ -16,4 +16,9 @@ public class InstructionRepositoryImpl implements InstructionRepository {
     public void update(InstructionLog logEntry) {
 
     }
+
+    @Override
+    public InstructionLog findByUpstreamRequestNo(String upstreamRequestNo) {
+        return null;
+    }
 }

@@ -39,7 +39,6 @@ public class ChannelReqNoService extends AbstractEpccChannelService<PaymentReque
         EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> context = new EpccContext<>(req, merchantInfo);
         context.setMerchantInfo(merchantInfo);
         context.setChannelOutRequest(epccChannelNoChannelOutRequest);
-        context.setSecurityService(new SecurityServiceImpl(merchantInfo));
         return context;
     }
 

@@ -39,7 +39,7 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public void verify(String channelCertSerialNumber, String value, String toCheckSign) {
+    public boolean verify(String channelCertSerialNumber, String value, String toCheckSign) {
         String channelCertBase64 = null;
         if (channelCertSerialNumber.equals(merchantInfo.getCurrentPublicCert().getPublicCertSerialNumber())) {
             channelCertBase64 = merchantInfo.getCurrentPublicCert().getPublicCertBase64();
@@ -51,7 +51,7 @@ public class SecurityServiceImpl implements SecurityService {
             throw new RuntimeException("没有找到渠道的证书");
         }
 
-        new Sign(merchantInfo.getSignType(), null, channelCertBase64).verify(value.getBytes(StandardCharsets.UTF_8), toCheckSign.getBytes(StandardCharsets.UTF_8));
+       return new Sign(merchantInfo.getSignType(), null, channelCertBase64).verify(value.getBytes(StandardCharsets.UTF_8), toCheckSign.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override

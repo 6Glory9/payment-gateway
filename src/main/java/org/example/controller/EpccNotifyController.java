@@ -14,7 +14,7 @@ public class EpccNotifyController {
             produces = MediaType.APPLICATION_XML_VALUE
     )
     @ResponseBody
-    public String epccNotify(@RequestHeader("MsgTp") String msgTp,
+    public String epccNotify(@RequestHeader("MsgTp") String msgTp, @RequestHeader("OriIssrId") String issuerId,
                              @RequestBody String rawXml) {
         return rawXml;
     }

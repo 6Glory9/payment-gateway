@@ -10,7 +10,7 @@ public interface SecurityService {
 
     String sign(String value);
 
-    void verify(String channelCertSerialNumber, String value, String toCheckSign);
+    boolean verify(String channelCertSerialNumber, String value, String toCheckSign);
 
     DigitalEnvelope generateDigitalEnvelope();
 

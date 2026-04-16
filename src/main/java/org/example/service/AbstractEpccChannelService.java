@@ -12,8 +12,6 @@ import org.example.utils.XMLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +19,7 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
 
 
     @Autowired
-    private GatewayEngine gatewayEngine;
+    private GatewayEngine<PaymentRequest, String> gatewayEngine;
 
 
     @Autowired
@@ -45,13 +43,13 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
         EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context = convertToChannelModel(request, merchantCache.get(request.getMerchantNo()));
 
         // 2. 签名与加密：调用具体的安全组件
-        securityProcess(context);
+        context.secureRequest();
 
         // 3. 通讯：发送 HTTP 请求
         String rawRes = doHttpExchange(context);
 
         // 4. 验签与解析：验证渠道返回的签名并转回标准结果
-        parseAndVerify(rawRes, context);
+        context.deconstructResponse(rawRes);
 
         return convertResult(request, context);
     }
@@ -61,30 +59,14 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
     // 由具体渠道（银联/网联）实现的抽象方法
     protected abstract EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> convertToChannelModel(UpstreamRequest req, MerchantInfo merchantInfo);
 
-    protected void securityProcess(EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
-        //生成信封
-        DigitalEnvelope digitalEnvelope = context.generateDigitalEnvelope();
 
-        Root<ChannelOutRequest> root = new Root<>(context.getChannelOutRequest(), context);
-
-        String sign = context.getSecurityService().sign(XMLUtils.toXML(root));
-        context.setRequestSign(sign);
-
-        //敏感信息加密
-        SymmetricEncryptor symmetricEncryptor = context.getSecurityService().generateSymmetricEncryptor(digitalEnvelope);
-        AbstractEncryptDecryptHandler.encrypt(root.getChannelOutBody(), symmetricEncryptor::encryptBase64);
-
-        context.setRequestRoot(root);
-
-    }
-
-    protected String doHttpExchange(EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
+    private String doHttpExchange(EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
         Map<String, String> headers = httpHeaders(context);
         String requestBody = XMLUtils.buildDirtyXml(context.getRequestRoot(), context.getRequestSign());
         return HttpClient.post(context.getMerchantInfo().getChannelUrl(), headers, requestBody, MediaType.APPLICATION_XML_VALUE);
     }
 
-    private Map<String, String> httpHeaders(EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
+    protected Map<String, String> httpHeaders(EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
         Map<String, String> httpHeaders = new HashMap<>();
         httpHeaders.put("OriIssrId", context.getMerchantInfo().getIssuerId());
         httpHeaders.put("MsgTp", context.getChannelOutRequest().getMessageType());
@@ -95,35 +77,5 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
         return httpHeaders;
     }
 
-    protected void parseAndVerify(String rawRes, EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
-        XMLUtils.XmlParseInfo xmlParseInfo = XMLUtils.parseDirtyXml(rawRes);
-
-
-        Root<ChannelOutResponse> returnRoot = XMLUtils.toRootBean(xmlParseInfo.getCleanXml());
-        context.setResponseRoot(returnRoot);
-        context.setResponseSign(xmlParseInfo.getSignature());
-
-        context.setSecurityService(new SecurityServiceImpl(context.getMerchantInfo()));
-
-        //解信封
-        context.extractResponseDigitalEnvelope();
-
-        //解密
-        SymmetricDecryptor symmetricDecryptor = context.getSecurityService().generateSymmetricDecryptor(context.getResponseDigitalEnvelope());
-        AbstractEncryptDecryptHandler.decrypt(context.getResponseRoot().getChannelOutBody(), symmetricDecryptor::decryptStr);
-
-        //验签
-        context.getSecurityService().verify(context.getResponseRoot().getHeader().getSignSerialNumber(), XMLUtils.toXML(context.getResponseRoot()), context.getResponseSign());
-    }
-
-    private Class<ChannelOutResponse> getChannelOutResponseClass() {
-        // 获取带泛型的父类
-        ParameterizedType superClassType = (ParameterizedType) getClass().getGenericSuperclass();
-
-        // 获取第 4 个泛型（下标从 0 开始：0、1、2、3）
-        Type actualType = superClassType.getActualTypeArguments()[3];
-
-        return (Class<ChannelOutResponse>) actualType;
-    }
 
 }

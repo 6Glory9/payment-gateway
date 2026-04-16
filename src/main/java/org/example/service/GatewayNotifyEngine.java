@@ -30,14 +30,13 @@ public class GatewayNotifyEngine<ChannelInRequest extends EpccChannelOut> implem
     @Autowired
     private BizDataAsyncService asyncService;     // 异步业务处理器
 
-    public String execute(String messageType, String request) {
+    public String execute(String issuerId, String messageType, String request) {
         // 1. 寻找匹配渠道
         NotifyService<ChannelInRequest> notifyService = mapper.get(messageType);
 
         if (notifyService == null) {
             throw new RuntimeException("Unsupported Channel");
         }
-
 
 
         // 2. 初始化指令记录
@@ -50,7 +49,7 @@ public class GatewayNotifyEngine<ChannelInRequest extends EpccChannelOut> implem
 
         try {
             // 3. 请求
-            NotifyResultVO<ChannelInRequest> result = notifyService.notify(request);
+            NotifyResultVO<ChannelInRequest> result = notifyService.notify(issuerId, request);
 
             // 4. 更新状态
             logEntry.setMerchantNo(result.getMerchantNo());

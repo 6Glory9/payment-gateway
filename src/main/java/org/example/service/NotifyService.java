@@ -12,5 +12,5 @@ public interface NotifyService<ChannelInRequest extends EpccChannelOut> {
     }
 
 
-    NotifyResultVO<ChannelInRequest> notify(String request);
+    NotifyResultVO<ChannelInRequest> notify(String issuerId ,String request);
 }

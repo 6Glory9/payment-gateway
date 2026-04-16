@@ -3,10 +3,10 @@ package org.example.service;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repository.InstructionLog;
 import org.example.repository.InstructionRepository;
-import org.example.utils.XMLUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
 import java.time.Duration;
 import java.time.LocalTime;
@@ -38,42 +38,60 @@ public class GatewayEngine<UpstreamRequest extends PaymentRequest, UpstreamData>
         }
 
         // 2. 初始化指令记录
+        InstructionLog logEntry = createInstructionLog(request, channelService);
+
+        try {
+
+            instructionRepo.save(logEntry);
+            // 3. 请求
+            PaymentResultVO<UpstreamData> result = channelService.call(request);
+
+            // 4. 更新状态
+            updateLogEntryWithResult(logEntry, result);
+            return result;
+        } catch (Throwable e) {
+            return handleException(request, e);
+        } finally {
+            updateLogEntryTime(logEntry);
+            instructionRepo.update(logEntry);
+            // 7. 异步生成业务数据（解耦对账逻辑）
+            asyncService.processBizData(logEntry);
+        }
+
+
+    }
+
+    private InstructionLog createInstructionLog(UpstreamRequest request, ChannelService<UpstreamRequest, UpstreamData> channelService) {
         InstructionLog logEntry = new InstructionLog();
         logEntry.setInstructionType(channelService.getInstructionType());
         logEntry.setUpstreamRequestNo(request.getUpstreamRequestNo());
         logEntry.setMerchantNo(request.getMerchantNo());
         logEntry.setRequestStatus(RequestStatus.SENT);
         logEntry.setRequestTime(LocalTime.now());
-        instructionRepo.save(logEntry);
-
-        try {
-            // 3. 请求
-            PaymentResultVO<UpstreamData> result = channelService.call(request);
-
-            // 4. 更新状态
-            logEntry.setChannelNo(result.getChannelBizNo());
-            logEntry.setChannelBizNo(result.getChannelBizNo());
-            logEntry.setBizStatus(result.getBizStatus());
-            logEntry.setRequestStatus(result.getRequestStatus());
-            return result;
-        } catch (Exception e) {
-            log.error("{}请求的出现的问题", request.getUpstreamRequestNo(), e);
-            throw e;
-        } catch (Throwable e) {
-            log.error("{}请求的出现未知的问题", request.getUpstreamRequestNo(), e);
-            logEntry.setRequestStatus(RequestStatus.UNKNOWN);
-            logEntry.setBizStatus(null);
-            throw e;
-        } finally {
-            logEntry.setResponseTime(LocalTime.now());
-            logEntry.setDuration(Duration.between(logEntry.getRequestTime(), logEntry.getResponseTime()).getNano());
-            // 6. 保存指令记录
-            instructionRepo.update(logEntry);
-
-            // 7. 异步生成业务数据（解耦对账逻辑）
-            asyncService.processBizData(logEntry);
-        }
+        return logEntry;
     }
+
+    private PaymentResultVO<UpstreamData> handleException(UpstreamRequest request, Throwable e) {
+        log.error("{} 请求出现问题，异常类型: {}", request.getUpstreamRequestNo(), e.getClass().getName(), e);
+
+        PaymentResultVO<UpstreamData> result = new PaymentResultVO<>();
+        result.setUpstreamRequestNo(request.getUpstreamRequestNo());
+        result.setRequestStatus(RequestStatus.SEND_FAILED);
+        return result;
+    }
+
+    private void updateLogEntryTime(InstructionLog logEntry) {
+        logEntry.setResponseTime(LocalTime.now());
+        logEntry.setDuration(Duration.between(logEntry.getRequestTime(), logEntry.getResponseTime()).getNano());
+    }
+
+    private void updateLogEntryWithResult(InstructionLog logEntry, PaymentResultVO<UpstreamData> result) {
+        logEntry.setChannelNo(result.getChannelNo());
+        logEntry.setChannelBizNo(result.getChannelBizNo());
+        logEntry.setBizStatus(result.getBizStatus());
+        logEntry.setRequestStatus(result.getRequestStatus());
+    }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
