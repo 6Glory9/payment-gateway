@@ -43,7 +43,7 @@ public class SecurityServiceImpl implements SecurityService {
         String channelCertBase64 = null;
         if (channelCertSerialNumber.equals(merchantInfo.getCurrentPublicCert().getPublicCertSerialNumber())) {
             channelCertBase64 = merchantInfo.getCurrentPublicCert().getPublicCertBase64();
-        } else if (merchantInfo.getHistoryPublicCert().get(channelCertSerialNumber) != null) {
+        } else if (merchantInfo.getHistoryPublicCert()!=null && merchantInfo.getHistoryPublicCert().get(channelCertSerialNumber) != null) {
             channelCertBase64 = merchantInfo.getHistoryPublicCert().get(channelCertSerialNumber).getPublicCertBase64();
         }
 

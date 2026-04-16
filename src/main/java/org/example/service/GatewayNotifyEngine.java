@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GatewayNotifyEngine<ChannelInRequest extends EpccChannelOut> implements InitializingBean {
 
-    @Autowired
+    @Autowired(required = false)
     private List<NotifyService<ChannelInRequest>> notifyServiceList;
 
     private Map<String, NotifyService<ChannelInRequest>> mapper;
@@ -77,7 +77,7 @@ public class GatewayNotifyEngine<ChannelInRequest extends EpccChannelOut> implem
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (mapper == null) {
+        if (mapper == null && notifyServiceList != null) {
             mapper = notifyServiceList.stream().collect(Collectors.toMap(NotifyService::getChannelCode,  // key：id
                     Function.identity()));     // value：对象本身
         }

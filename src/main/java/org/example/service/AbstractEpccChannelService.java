@@ -1,12 +1,8 @@
 package org.example.service;
 
-import cn.hutool.crypto.symmetric.SymmetricDecryptor;
-import cn.hutool.crypto.symmetric.SymmetricEncryptor;
-import org.example.repository.DigitalEnvelope;
 import org.example.repository.MerchantCache;
 import org.example.repository.MerchantInfo;
-import org.example.service.impl.ChannelReqNoService;
-import org.example.service.security.SecurityServiceImpl;
+import org.example.service.impl.ChannelReqNoServiceImpl;
 import org.example.utils.HttpClient;
 import org.example.utils.XMLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +10,8 @@ import org.springframework.http.MediaType;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.example.service.impl.MessageType.EPCC_401_001_01;
 
 public abstract class AbstractEpccChannelService<UpstreamRequest extends PaymentRequest, UpstreamData, ChannelOutRequest extends EpccChannelOut, ChannelOutResponse extends EpccChannelOut> implements ChannelService<UpstreamRequest, UpstreamData> {
 
@@ -29,7 +27,7 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
     @Override
     public String generateChannelReqNo(UpstreamRequest upstreamRequest) {
         PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setChannelCode(ChannelReqNoService.THIS_CHANNEL_CODE);
+        paymentRequest.setChannelCode(EPCC_401_001_01.code());
         paymentRequest.setUpstreamRequestNo(upstreamRequest.getUpstreamRequestNo());
         paymentRequest.setMerchantNo(upstreamRequest.getMerchantNo());
         PaymentResultVO<String> resultVO = gatewayEngine.execute(paymentRequest);

@@ -15,6 +15,6 @@ public class EpccChannelOut implements Serializable {
     private String direction = "11";
 
     @JsonIgnore
-    private String messageType;
+    protected String messageType;
 
 }

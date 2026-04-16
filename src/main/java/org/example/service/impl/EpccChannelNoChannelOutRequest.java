@@ -5,15 +5,18 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.service.EpccChannelOut;
 
+import static org.example.service.impl.MessageType.EPCC_401_001_01;
+
 @Setter
 @Getter
 public class EpccChannelNoChannelOutRequest extends EpccChannelOut {
 
     public EpccChannelNoChannelOutRequest() {
-        this.setMessageType("epcc.401.001.01");
+        this.setMessageType(EPCC_401_001_01.code());
     }
 
     @JacksonXmlProperty(localName = "InstgId")
     private String institutionId;
+
 
 }

@@ -3,15 +3,14 @@ package org.example.service.impl;
 import cn.hutool.core.util.IdUtil;
 import org.example.repository.MerchantInfo;
 import org.example.service.*;
-import org.example.service.security.SecurityServiceImpl;
 import org.springframework.stereotype.Service;
 
 import static org.example.service.InstructionType.REQUEST_QUERY;
+import static org.example.service.impl.MessageType.EPCC_401_001_01;
 
 @Service
-public class ChannelReqNoService extends AbstractEpccChannelService<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> {
+public class ChannelReqNoServiceImpl extends AbstractEpccChannelService<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> {
 
-    public static final String THIS_CHANNEL_CODE = "EPCC_CHANNEL_NO";
 
 
     @Override
@@ -31,7 +30,6 @@ public class ChannelReqNoService extends AbstractEpccChannelService<PaymentReque
     @Override
     protected EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> convertToChannelModel(PaymentRequest req, MerchantInfo merchantInfo) {
 
-
         EpccChannelNoChannelOutRequest epccChannelNoChannelOutRequest = new EpccChannelNoChannelOutRequest();
         epccChannelNoChannelOutRequest.setInstitutionId(merchantInfo.getIssuerId());
 
@@ -44,7 +42,7 @@ public class ChannelReqNoService extends AbstractEpccChannelService<PaymentReque
 
     @Override
     public String getChannelCode() {
-        return THIS_CHANNEL_CODE;
+        return EPCC_401_001_01.code();
     }
 
     @Override
