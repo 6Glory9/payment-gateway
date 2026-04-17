@@ -1,7 +1,7 @@
 package org.example.service;
 
 
-public interface NotifyService<ChannelInRequest extends EpccChannelOut> {
+public interface NotifyService<ChannelInResponse> {
 
 
     String getChannelCode();
@@ -12,5 +12,5 @@ public interface NotifyService<ChannelInRequest extends EpccChannelOut> {
     }
 
 
-    NotifyResultVO<ChannelInRequest> notify(String issuerId ,String request);
+    NotifyResultVO<ChannelInResponse> notify(String issuerId, String request);
 }

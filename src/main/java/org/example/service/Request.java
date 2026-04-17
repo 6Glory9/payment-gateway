@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Setter
 @Getter
-public class PaymentRequest implements Serializable {
+public class Request implements Serializable {
 
 
     private String merchantNo; //根据这个查询静态的信息

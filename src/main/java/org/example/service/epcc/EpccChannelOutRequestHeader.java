@@ -1,4 +1,4 @@
-package org.example.service;
+package org.example.service.epcc;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;

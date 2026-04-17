@@ -15,7 +15,7 @@ public class SignatureCryptoFactory {
     }
 
     public SignatureCrypto get(String algorithm) {
-        SignatureCrypto crypto = map.get(algorithm.toLowerCase());
+        SignatureCrypto crypto = map.get(algorithm);
         if (crypto == null) throw new RuntimeException("不支持算法：" + algorithm);
         return crypto;
     }

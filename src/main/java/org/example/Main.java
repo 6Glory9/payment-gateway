@@ -2,8 +2,7 @@ package org.example;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.service.GatewayEngine;
-import org.example.service.PaymentRequest;
-import org.example.service.impl.ChannelReqNoServiceImpl;
+import org.example.service.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -29,10 +28,10 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("payment-gateway 项目启动成功");
 
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setUpstreamRequestNo("1111");
-        paymentRequest.setChannelCode(EPCC_401_001_01.code());
+        Request upstreamRequest = new Request();
+        upstreamRequest.setUpstreamRequestNo("1111");
+        upstreamRequest.setChannelCode(EPCC_401_001_01.code());
 
-        gatewayEngine.execute(paymentRequest);
+        gatewayEngine.execute(upstreamRequest);
     }
 }

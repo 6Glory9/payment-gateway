@@ -4,9 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Setter
@@ -20,7 +17,7 @@ public class ChannelMerchant implements Serializable {
     private String channelUrl;
 
     //签名的类型
-    private String signType = "SM2";
+    private String signType = "SM3withSM2";
 
     //信封加解密类型
     private String encryptDigitalEnvelopeType = "RSA";
@@ -28,18 +25,10 @@ public class ChannelMerchant implements Serializable {
     //敏感信息对称加解密类型
     private String encryptType = "SM4";
 
-    //当前商户自己的公私钥
-    private PrivateCert currentPrivateCert;
+    private String signSerialNumber;
 
-    //当前渠道的公钥
-    private PublicCert currentPublicCert;
+    private String encryptionSerialNumber;
 
 
-    //商户自己使用过的公私钥
-    private Map<String, PrivateCert> historyPrivateCert = new HashMap<>();
-
-    //渠道下发的公钥
-    private Map<String, PublicCert> historyPublicCert = new HashMap<>();
-
-    private List<ChannelCertificate> channelCertificateList = new ArrayList<>();
+    private Map<String, ChannelCertificate> channelCertificateMapper;
 }

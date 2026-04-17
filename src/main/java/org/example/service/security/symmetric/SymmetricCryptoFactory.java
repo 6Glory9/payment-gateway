@@ -16,7 +16,7 @@ public class SymmetricCryptoFactory {
     }
 
     public SymmetricCrypto get(String algorithm) {
-        SymmetricCrypto crypto = map.get(algorithm.toLowerCase());
+        SymmetricCrypto crypto = map.get(algorithm);
         if (crypto == null) throw new RuntimeException("不支持算法：" + algorithm);
         return crypto;
     }

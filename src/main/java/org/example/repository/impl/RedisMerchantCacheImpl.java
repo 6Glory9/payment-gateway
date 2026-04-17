@@ -5,10 +5,9 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.KeyUtil;
 import lombok.SneakyThrows;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.example.repository.ChannelCertificate;
 import org.example.repository.MerchantCache;
 import org.example.repository.ChannelMerchant;
-import org.example.repository.PrivateCert;
-import org.example.repository.PublicCert;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Repository;
@@ -19,6 +18,8 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Repository
 public class RedisMerchantCacheImpl implements MerchantCache {
@@ -33,18 +34,18 @@ public class RedisMerchantCacheImpl implements MerchantCache {
         channelMerchant.setMerchantNo(IdUtil.getSnowflake().nextIdStr());
         channelMerchant.setChannelUrl("http://localhost:8080/epcc/notify");
         channelMerchant.setIssuerId(IdUtil.getSnowflake().nextIdStr());
-        PrivateCert privateCert = readPfx("20260415172607_www.lloll.cn.pfx");
+        ChannelCertificate privateCert = readPfx("20260415172607_www.lloll.cn.pfx");
 
-        PrivateCert privateCert2 = readPfx("20260416151439_www.llmll.cn.pfx");
+        ChannelCertificate privateCert2 = readPfx("20260416151439_www.llmll.cn.pfx");
 
-        channelMerchant.setCurrentPrivateCert(privateCert);
+        channelMerchant.setSignSerialNumber(privateCert.getCertSn());
 
-        channelMerchant.getHistoryPrivateCert().put(privateCert2.getPublicCert().getPublicCertSerialNumber(), privateCert2);
+        channelMerchant.setEncryptionSerialNumber(privateCert2.getCertSn());
 
-        channelMerchant.setCurrentPublicCert(privateCert2.getPublicCert());
-
-        channelMerchant.getHistoryPublicCert().put(privateCert.getPublicCert().getPublicCertSerialNumber(), privateCert.getPublicCert());
-
+        Map<String, ChannelCertificate> channelCertificateMapper = new HashMap<>();
+        channelCertificateMapper.put(privateCert.getCertSn(), privateCert);
+        channelCertificateMapper.put(privateCert2.getCertSn(), privateCert2);
+        channelMerchant.setChannelCertificateMapper(channelCertificateMapper);
 
         return channelMerchant;
     }
@@ -56,15 +57,25 @@ public class RedisMerchantCacheImpl implements MerchantCache {
         channelMerchant.setChannelUrl("https://www.baidu.com");
         channelMerchant.setIssuerId(IdUtil.getSnowflake().nextIdStr());
 
-        channelMerchant.setCurrentPrivateCert(readPfx("20260416151439_www.llmll.cn.pfx"));
+        ChannelCertificate privateCert = readPfx("20260415172607_www.lloll.cn.pfx");
 
-        channelMerchant.setCurrentPublicCert(readCer("20260415172607_www.lloll.cn.pfx"));
+        ChannelCertificate privateCert2 = readPfx("20260416151439_www.llmll.cn.pfx");
+
+        channelMerchant.setSignSerialNumber(privateCert2.getCertSn());
+
+        channelMerchant.setEncryptionSerialNumber(privateCert.getCertSn());
+
+
+        Map<String, ChannelCertificate> channelCertificateMapper = new HashMap<>();
+        channelCertificateMapper.put(privateCert.getCertSn(), privateCert);
+        channelCertificateMapper.put(privateCert2.getCertSn(), privateCert2);
+        channelMerchant.setChannelCertificateMapper(channelCertificateMapper);
         return channelMerchant;
     }
 
 
     @SneakyThrows
-    private PrivateCert readPfx(String classpath) {
+    private ChannelCertificate readPfx(String classpath) {
         Resource resource = new ClassPathResource(classpath);
 
         KeyStore keyStore = KeyUtil.readPKCS12KeyStore(resource.getFile(), "123456".toCharArray());
@@ -90,57 +101,16 @@ public class RedisMerchantCacheImpl implements MerchantCache {
 
         System.out.println("序列号(16进制): " + cert.getSerialNumber().toString(16).toUpperCase());
 
-        PrivateCert privateCert = new PrivateCert();
-        privateCert.setPrivateCertBase64(Base64.encode(privateKey.getEncoded()));
+        ChannelCertificate privateCert = new ChannelCertificate();
 
-        PublicCert publicCert = new PublicCert();
-        publicCert.setPublicCertBase64(Base64.encode(publicKey.getEncoded()));
-        publicCert.setPublicCertSerialNumber(cert.getSerialNumber().toString(16).toUpperCase());
+        privateCert.setPfxBase64(Base64.encode(privateKey.getEncoded()));
+        privateCert.setCertBase64(Base64.encode(publicKey.getEncoded()));
+        privateCert.setCertSn(cert.getSerialNumber().toString(16).toUpperCase());
 
-        privateCert.setPublicCert(publicCert);
 
         return privateCert;
     }
 
-
-    @SneakyThrows
-    private PublicCert readCer(String classpath) {
-        Resource resource = new ClassPathResource(classpath);
-
-        KeyStore keyStore = KeyUtil.readPKCS12KeyStore(resource.getFile(), "123456".toCharArray());
-
-
-        // 2. 获取第一个证书别名
-        String alias = keyStore.aliases().nextElement();
-
-        // ==========================================
-        // ✅ 第一步：获取 SM2 私钥
-        // ==========================================
-        PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, "123456".toCharArray());
-        System.out.println("========== SM2 私钥 ==========");
-        System.out.println(Base64.encode(privateKey.getEncoded()));
-
-        // ==========================================
-        // ✅ 额外：你最开始要的 证书序列号
-        // ==========================================
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-        PublicKey publicKey = cert.getPublicKey();
-        System.out.println("\n========== SM2 公钥 ==========");
-        System.out.println(Base64.encode(publicKey.getEncoded()));
-
-        System.out.println("序列号(16进制): " + cert.getSerialNumber().toString(16).toUpperCase());
-
-        PrivateCert privateCert = new PrivateCert();
-        privateCert.setPrivateCertBase64(Base64.encode(privateKey.getEncoded()));
-
-        PublicCert publicCert = new PublicCert();
-        publicCert.setPublicCertBase64(Base64.encode(publicKey.getEncoded()));
-        publicCert.setPublicCertSerialNumber(cert.getSerialNumber().toString(16).toUpperCase());
-
-        privateCert.setPublicCert(publicCert);
-
-        return publicCert;
-    }
 
     /**
      *

@@ -9,8 +9,8 @@ import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.example.service.EpccChannelOut;
-import org.example.service.Root;
+import org.example.service.epcc.EpccChannelOut;
+import org.example.service.epcc.Root;
 
 import java.lang.reflect.Type;
 

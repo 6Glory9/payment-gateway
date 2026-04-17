@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repository.InstructionLog;
 import org.example.repository.InstructionRepository;
+import org.example.service.epcc.EpccChannelOut;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class GatewayNotifyEngine<ChannelInRequest extends EpccChannelOut> implements InitializingBean {
+public class NotifyGatewayEngine<ChannelInRequest extends EpccChannelOut> implements InitializingBean {
 
     @Autowired(required = false)
     private List<NotifyService<ChannelInRequest>> notifyServiceList;

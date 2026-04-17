@@ -1,11 +1,11 @@
-package org.example.service;
+package org.example.service.epcc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.repository.Envelope;
 
-import java.beans.Transient;
 import java.io.Serializable;
 
 @Setter
@@ -23,6 +23,12 @@ public class Root<ChannelBody> implements Serializable {
 
     @JacksonXmlProperty(localName = "MsgBody")
     private ChannelBody channelBody;
+
+    @JsonIgnore
+    private String sign;
+
+    @JsonIgnore
+    private Envelope envelope;
 
 
     public Root(ChannelBody channelBody) {

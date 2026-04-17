@@ -6,7 +6,6 @@ import org.example.repository.InstructionRepository;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
 import java.time.Duration;
 import java.time.LocalTime;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class GatewayEngine<UpstreamRequest extends PaymentRequest, UpstreamData> implements InitializingBean {
+public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implements InitializingBean {
 
     @Autowired
     private List<ChannelService<UpstreamRequest, UpstreamData>> channelServiceList;

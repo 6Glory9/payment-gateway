@@ -15,7 +15,7 @@ public class AsymmetricCryptoFactory {
     }
 
     public AsymmetricCrypto get(String algorithm) {
-        AsymmetricCrypto crypto = map.get(algorithm.toLowerCase());
+        AsymmetricCrypto crypto = map.get(algorithm);
         if (crypto == null) throw new RuntimeException("不支持算法：" + algorithm);
         return crypto;
     }

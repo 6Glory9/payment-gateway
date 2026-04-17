@@ -1,14 +1,14 @@
 package org.example.service;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.service.epcc.EpccChannelOut;
 
 import java.io.Serializable;
 
 @Setter
 @Getter
-public class NotifyResultVO<ChannelInRequest extends EpccChannelOut> implements Serializable {
+public class NotifyResultVO<ChannelInRequest> implements Serializable {
 
     private String upstreamRequestNo;
 

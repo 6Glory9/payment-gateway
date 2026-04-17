@@ -3,42 +3,42 @@ package org.example.service.impl;
 import cn.hutool.core.util.IdUtil;
 import org.example.repository.ChannelMerchant;
 import org.example.service.*;
+import org.example.service.epcc.AbstractEpccChannelService;
+import org.example.service.epcc.Root;
 import org.springframework.stereotype.Service;
 
 import static org.example.service.InstructionType.REQUEST_QUERY;
 import static org.example.service.impl.MessageType.EPCC_401_001_01;
 
 @Service
-public class ChannelReqNoServiceImpl extends AbstractEpccChannelService<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> {
-
+public class ChannelReqNoServiceImpl extends AbstractEpccChannelService<Request, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> {
 
 
     @Override
-    public String generateChannelReqNo(PaymentRequest upstreamRequest) {
-        return "N/A";
+    public String generateChannelReqNo(Request upstreamRequest) {
+        return "N/A" + IdUtil.getSnowflakeNextIdStr();
+    }
+
+    @Override
+    protected EpccChannelNoChannelOutRequest convertToChannelOutRequestBody(Request req, ChannelMerchant channelMerchant) {
+        EpccChannelNoChannelOutRequest epccChannelNoChannelOutRequest = new EpccChannelNoChannelOutRequest();
+
+        epccChannelNoChannelOutRequest.setInstitutionId(channelMerchant.getIssuerId());
+
+        return epccChannelNoChannelOutRequest;
     }
 
 
     @Override
-    protected PaymentResultVO<String> convertResult(PaymentRequest request, EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> context) {
+    protected PaymentResultVO<String> convertToResponse(Request request, Root<EpccChannelNoChannelOutRequest> channelOutRequestBodyRoot, EpccChannelNoChannelOutResponse channelBody) {
         PaymentResultVO<String> resultVO = new PaymentResultVO<>();
-        EpccChannelNoChannelOutResponse channelNoChannelOutResponse = context.getResponseRoot().getChannelBody();
-        resultVO.setData(IdUtil.fastUUID());
+        resultVO.setData(IdUtil.getSnowflakeNextIdStr());
+        resultVO.setRequestStatus(RequestStatus.SEND_SUCCESS);
+        resultVO.setBizStatus(BizStatus.SUCCESS);
+        resultVO.setUpstreamRequestNo(request.getUpstreamRequestNo());
         return resultVO;
     }
 
-    @Override
-    protected EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> convertToChannelModel(PaymentRequest req, ChannelMerchant channelMerchant) {
-
-        EpccChannelNoChannelOutRequest epccChannelNoChannelOutRequest = new EpccChannelNoChannelOutRequest();
-        epccChannelNoChannelOutRequest.setInstitutionId(channelMerchant.getIssuerId());
-
-
-        EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> context = new EpccContext<>(req, channelMerchant);
-        context.setChannelMerchant(channelMerchant);
-        context.setChannelOutRequest(epccChannelNoChannelOutRequest);
-        return context;
-    }
 
     @Override
     public String getChannelCode() {
