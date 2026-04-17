@@ -18,7 +18,7 @@ public abstract class HttpClient {
             .writeTimeout(50, TimeUnit.SECONDS) //send timeout
             .readTimeout(60, TimeUnit.SECONDS)  //receive timeout
             .callTimeout(90, TimeUnit.SECONDS) //call timeout
-            .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY) )
+            .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC) )
             .eventListenerFactory(MetricsEventListener.FACTORY)
             .build();
 

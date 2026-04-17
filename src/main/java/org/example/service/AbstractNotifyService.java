@@ -2,7 +2,7 @@ package org.example.service;
 
 
 import org.example.repository.MerchantCache;
-import org.example.repository.MerchantInfo;
+import org.example.repository.ChannelMerchant;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractNotifyService<ChannelInRequest extends EpccChannelOut> implements NotifyService<ChannelInRequest> {
@@ -12,9 +12,9 @@ public abstract class AbstractNotifyService<ChannelInRequest extends EpccChannel
 
     public NotifyResultVO<ChannelInRequest> notify(String issuerId, String request) {
 
-        MerchantInfo merchantInfo = merchantCache.getFromChannel(issuerId);
+        ChannelMerchant channelMerchant = merchantCache.getFromChannel(issuerId);
 
-        EpccContext<PaymentRequest, Void, ChannelInRequest, ChannelInRequest> context = new EpccContext<>(null, merchantInfo);
+        EpccContext<PaymentRequest, Void, ChannelInRequest, ChannelInRequest> context = new EpccContext<>(null, channelMerchant);
 
 
         context.deconstructResponse(request);

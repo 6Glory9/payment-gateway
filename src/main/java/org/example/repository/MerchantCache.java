@@ -2,8 +2,8 @@ package org.example.repository;
 
 public interface MerchantCache {
 
-    MerchantInfo get(String merchantNo);
+    ChannelMerchant get(String merchantNo);
 
-    MerchantInfo getFromChannel(String issuerId);
+    ChannelMerchant getFromChannel(String issuerId);
 
 }

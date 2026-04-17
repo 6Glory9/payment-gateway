@@ -1,7 +1,7 @@
 package org.example.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import org.example.repository.MerchantInfo;
+import org.example.repository.ChannelMerchant;
 import org.example.service.*;
 import org.springframework.stereotype.Service;
 
@@ -22,20 +22,20 @@ public class ChannelReqNoServiceImpl extends AbstractEpccChannelService<PaymentR
     @Override
     protected PaymentResultVO<String> convertResult(PaymentRequest request, EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> context) {
         PaymentResultVO<String> resultVO = new PaymentResultVO<>();
-        EpccChannelNoChannelOutResponse channelNoChannelOutResponse = context.getResponseRoot().getChannelOutBody();
+        EpccChannelNoChannelOutResponse channelNoChannelOutResponse = context.getResponseRoot().getChannelBody();
         resultVO.setData(IdUtil.fastUUID());
         return resultVO;
     }
 
     @Override
-    protected EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> convertToChannelModel(PaymentRequest req, MerchantInfo merchantInfo) {
+    protected EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> convertToChannelModel(PaymentRequest req, ChannelMerchant channelMerchant) {
 
         EpccChannelNoChannelOutRequest epccChannelNoChannelOutRequest = new EpccChannelNoChannelOutRequest();
-        epccChannelNoChannelOutRequest.setInstitutionId(merchantInfo.getIssuerId());
+        epccChannelNoChannelOutRequest.setInstitutionId(channelMerchant.getIssuerId());
 
 
-        EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> context = new EpccContext<>(req, merchantInfo);
-        context.setMerchantInfo(merchantInfo);
+        EpccContext<PaymentRequest, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> context = new EpccContext<>(req, channelMerchant);
+        context.setChannelMerchant(channelMerchant);
         context.setChannelOutRequest(epccChannelNoChannelOutRequest);
         return context;
     }

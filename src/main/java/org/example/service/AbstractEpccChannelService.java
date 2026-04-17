@@ -1,8 +1,7 @@
 package org.example.service;
 
 import org.example.repository.MerchantCache;
-import org.example.repository.MerchantInfo;
-import org.example.service.impl.ChannelReqNoServiceImpl;
+import org.example.repository.ChannelMerchant;
 import org.example.utils.HttpClient;
 import org.example.utils.XMLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,18 +54,18 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Payment
     protected abstract PaymentResultVO<UpstreamData> convertResult(UpstreamRequest request, EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context);
 
     // 由具体渠道（银联/网联）实现的抽象方法
-    protected abstract EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> convertToChannelModel(UpstreamRequest req, MerchantInfo merchantInfo);
+    protected abstract EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> convertToChannelModel(UpstreamRequest req, ChannelMerchant channelMerchant);
 
 
     private String doHttpExchange(EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
         Map<String, String> headers = httpHeaders(context);
         String requestBody = XMLUtils.buildDirtyXml(context.getRequestRoot(), context.getRequestSign());
-        return HttpClient.post(context.getMerchantInfo().getChannelUrl(), headers, requestBody, MediaType.APPLICATION_XML_VALUE);
+        return HttpClient.post(context.getChannelMerchant().getChannelUrl(), headers, requestBody, MediaType.APPLICATION_XML_VALUE);
     }
 
     protected Map<String, String> httpHeaders(EpccContext<UpstreamRequest, UpstreamData, ChannelOutRequest, ChannelOutResponse> context) {
         Map<String, String> httpHeaders = new HashMap<>();
-        httpHeaders.put("OriIssrId", context.getMerchantInfo().getIssuerId());
+        httpHeaders.put("OriIssrId", context.getChannelMerchant().getIssuerId());
         httpHeaders.put("MsgTp", context.getChannelOutRequest().getMessageType());
         httpHeaders.put("PyerAcctTp", "00");
         httpHeaders.put("PyeeAcctTp", "04");

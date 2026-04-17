@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repository.DigitalEnvelope;
-import org.example.repository.MerchantInfo;
-import org.example.repository.PrivateCert;
+import org.example.repository.ChannelMerchant;
 import org.example.service.security.SecurityService;
 import org.example.service.security.SecurityServiceImpl;
 import org.example.utils.XMLUtils;
@@ -34,9 +33,9 @@ public class EpccContext<UpstreamRequest extends PaymentRequest, UpstreamData, C
 
     private SecurityService securityService;
 
-    public EpccContext(UpstreamRequest upstreamRequest, MerchantInfo merchantInfo) {
-        super(upstreamRequest, merchantInfo);
-        this.securityService = new SecurityServiceImpl(merchantInfo);
+    public EpccContext(UpstreamRequest upstreamRequest, ChannelMerchant channelMerchant) {
+        super(upstreamRequest, channelMerchant);
+        this.securityService = new SecurityServiceImpl(channelMerchant);
     }
 
 
@@ -74,7 +73,7 @@ public class EpccContext<UpstreamRequest extends PaymentRequest, UpstreamData, C
         // 3. 解密 Body
         DigitalEnvelope resEnvelope = extractResponseDigitalEnvelope();
         SymmetricDecryptor decryptor = securityService.generateSymmetricDecryptor(resEnvelope);
-        AbstractEncryptDecryptHandler.decrypt(responseRoot.getChannelOutBody(), decryptor::decryptStr);
+        AbstractEncryptDecryptHandler.decrypt(responseRoot.getChannelBody(), decryptor::decryptStr);
     }
 
 

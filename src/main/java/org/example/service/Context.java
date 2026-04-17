@@ -2,7 +2,7 @@ package org.example.service;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.example.repository.MerchantInfo;
+import org.example.repository.ChannelMerchant;
 
 import java.io.Serializable;
 
@@ -14,11 +14,11 @@ public abstract class Context<UpstreamRequest, UpstreamData> implements Serializ
 
     private PaymentResultVO<UpstreamData> upstreamData;
 
-    protected MerchantInfo merchantInfo;
+    protected ChannelMerchant channelMerchant;
 
 
-    public Context(UpstreamRequest upstreamRequest, MerchantInfo merchantInfo) {
+    public Context(UpstreamRequest upstreamRequest, ChannelMerchant channelMerchant) {
         this.upstreamRequest = upstreamRequest;
-        this.merchantInfo = merchantInfo;
+        this.channelMerchant = channelMerchant;
     }
 }

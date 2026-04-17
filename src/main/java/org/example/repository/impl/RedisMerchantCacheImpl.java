@@ -6,7 +6,7 @@ import cn.hutool.crypto.KeyUtil;
 import lombok.SneakyThrows;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.example.repository.MerchantCache;
-import org.example.repository.MerchantInfo;
+import org.example.repository.ChannelMerchant;
 import org.example.repository.PrivateCert;
 import org.example.repository.PublicCert;
 import org.springframework.core.io.ClassPathResource;
@@ -28,30 +28,38 @@ public class RedisMerchantCacheImpl implements MerchantCache {
     }
 
     @Override
-    public MerchantInfo get(String merchantNo) {
-        MerchantInfo merchantInfo = new MerchantInfo();
-        merchantInfo.setMerchantNo(IdUtil.getSnowflake().nextIdStr());
-        merchantInfo.setChannelUrl("http://localhost:8080/epcc/notify");
-        merchantInfo.setIssuerId(IdUtil.getSnowflake().nextIdStr());
+    public ChannelMerchant get(String merchantNo) {
+        ChannelMerchant channelMerchant = new ChannelMerchant();
+        channelMerchant.setMerchantNo(IdUtil.getSnowflake().nextIdStr());
+        channelMerchant.setChannelUrl("http://localhost:8080/epcc/notify");
+        channelMerchant.setIssuerId(IdUtil.getSnowflake().nextIdStr());
+        PrivateCert privateCert = readPfx("20260415172607_www.lloll.cn.pfx");
 
-        merchantInfo.setCurrentPrivateCert(readPfx("20260415172607_www.lloll.cn.pfx"));
+        PrivateCert privateCert2 = readPfx("20260416151439_www.llmll.cn.pfx");
 
-        merchantInfo.setCurrentPublicCert(readCer("20260416151439_www.llmll.cn.pfx"));
+        channelMerchant.setCurrentPrivateCert(privateCert);
 
-        return merchantInfo;
+        channelMerchant.getHistoryPrivateCert().put(privateCert2.getPublicCert().getPublicCertSerialNumber(), privateCert2);
+
+        channelMerchant.setCurrentPublicCert(privateCert2.getPublicCert());
+
+        channelMerchant.getHistoryPublicCert().put(privateCert.getPublicCert().getPublicCertSerialNumber(), privateCert.getPublicCert());
+
+
+        return channelMerchant;
     }
 
     @Override
-    public MerchantInfo getFromChannel(String issuerId) {
-        MerchantInfo merchantInfo = new MerchantInfo();
-        merchantInfo.setMerchantNo(IdUtil.getSnowflake().nextIdStr());
-        merchantInfo.setChannelUrl("https://www.baidu.com");
-        merchantInfo.setIssuerId(IdUtil.getSnowflake().nextIdStr());
+    public ChannelMerchant getFromChannel(String issuerId) {
+        ChannelMerchant channelMerchant = new ChannelMerchant();
+        channelMerchant.setMerchantNo(IdUtil.getSnowflake().nextIdStr());
+        channelMerchant.setChannelUrl("https://www.baidu.com");
+        channelMerchant.setIssuerId(IdUtil.getSnowflake().nextIdStr());
 
-        merchantInfo.setCurrentPrivateCert(readPfx("20260416151439_www.llmll.cn.pfx"));
+        channelMerchant.setCurrentPrivateCert(readPfx("20260416151439_www.llmll.cn.pfx"));
 
-        merchantInfo.setCurrentPublicCert(readCer("20260415172607_www.lloll.cn.pfx"));
-        return merchantInfo;
+        channelMerchant.setCurrentPublicCert(readCer("20260415172607_www.lloll.cn.pfx"));
+        return channelMerchant;
     }
 
 

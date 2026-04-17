@@ -4,11 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Setter
 @Getter
-public class MerchantInfo implements Serializable {
+public class ChannelMerchant implements Serializable {
     //商户号
     private String merchantNo;
     //渠道商户标记
@@ -33,8 +36,10 @@ public class MerchantInfo implements Serializable {
 
 
     //商户自己使用过的公私钥
-    private Map<String, PrivateCert> historyPrivateCert;
+    private Map<String, PrivateCert> historyPrivateCert = new HashMap<>();
 
     //渠道下发的公钥
-    private Map<String, PublicCert> historyPublicCert;
+    private Map<String, PublicCert> historyPublicCert = new HashMap<>();
+
+    private List<ChannelCertificate> channelCertificateList = new ArrayList<>();
 }
