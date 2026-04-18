@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.repository.dao.InstructionLogExtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.example.repository.po.InstructionLogExtPO">
+        <id column="id" property="id" />
+        <result column="merchant_no" property="merchantNo" />
+        <result column="upstream_request_no" property="upstreamRequestNo" />
+        <result column="instruction_type" property="instructionType" />
+        <result column="raw_req_content" property="rawReqContent" />
+        <result column="raw_res_content" property="rawResContent" />
+        <result column="raw_channel_request_content" property="rawChannelRequestContent" />
+        <result column="raw_channel_response_content" property="rawChannelResponseContent" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="channel_code" property="channelCode" />
+    </resultMap>
+
+</mapper>
