@@ -2,6 +2,7 @@ package org.example.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -112,7 +113,7 @@ public class XMLUtils {
         return null;
     }
 
-    public static <ChannelOutBody extends EpccChannelOut> Root<ChannelOutBody> toRootBean(String xml) {
+    public static <ChannelOutBody> Root<ChannelOutBody> toRootBean(String xml) {
         try {
             return XML_MAPPER.readValue(xml, new TypeReference<>() {
             });
@@ -121,6 +122,21 @@ public class XMLUtils {
         }
         return null;
     }
+
+
+    public static <ChannelOutBody> Root<ChannelOutBody> toRootBean(String xml, Class bodyClass) {
+        try {
+            // 关键：告诉 Jackson 真实的泛型类型 = Root<你传入的实体类>
+            JavaType javaType = XML_MAPPER.getTypeFactory()
+                    .constructParametricType(Root.class, bodyClass);
+
+            return XML_MAPPER.readValue(xml, javaType);
+        } catch (Exception e) {
+            log.warn("toBean error", e);
+        }
+        return null;
+    }
+
 
     public static <B> B toBean(String xml, Type type) {
         try {

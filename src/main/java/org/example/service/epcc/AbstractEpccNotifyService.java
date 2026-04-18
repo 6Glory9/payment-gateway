@@ -1,6 +1,7 @@
 package org.example.service.epcc;
 
 
+import cn.hutool.core.util.TypeUtil;
 import org.example.repository.ChannelMerchant;
 import org.example.repository.Envelope;
 import org.example.repository.MerchantCache;
@@ -76,9 +77,14 @@ public abstract class AbstractEpccNotifyService<ChannelInRequest, ChannelInRespo
 
     private Root<ChannelInRequest> parseXmlToChannelModel(String rawRes) {
         XMLUtils.XmlParseInfo info = XMLUtils.parseDirtyXml(rawRes);
-        Root<ChannelInRequest> channelInRequestBodyRoot = XMLUtils.toBean(info.getCleanXml());
+        Root<ChannelInRequest> channelInRequestBodyRoot = XMLUtils.toRootBean(info.getCleanXml(), getChannelInRequestBodyClass());
         channelInRequestBodyRoot.setSign(info.getSignature());
         return channelInRequestBodyRoot;
+    }
+
+
+    private Class<?> getChannelInRequestBodyClass() {
+        return (Class<?>) TypeUtil.getTypeArgument(getClass());
     }
 
 

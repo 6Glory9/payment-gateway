@@ -1,6 +1,7 @@
 package org.example.service.epcc;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.TypeUtil;
 import org.example.repository.ChannelMerchant;
 import org.example.repository.Envelope;
 import org.example.repository.MerchantCache;
@@ -116,9 +117,13 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Request
     @NotNull
     private Root<ChannelOutResponseBody> parseXmlToChannelModel(String rawRes) {
         XMLUtils.XmlParseInfo info = XMLUtils.parseDirtyXml(rawRes);
-        Root<ChannelOutResponseBody> channelOutResponseBodyRoot = XMLUtils.toBean(info.getCleanXml());
+        Root<ChannelOutResponseBody> channelOutResponseBodyRoot = XMLUtils.toRootBean(info.getCleanXml(), getChannelOutResponseBodyClass());
         channelOutResponseBodyRoot.setSign(info.getSignature());
         return channelOutResponseBodyRoot;
+    }
+
+    private Class<?> getChannelOutResponseBodyClass() {
+        return (Class<?>) TypeUtil.getTypeArgument(getClass(), 3);
     }
 
 
@@ -138,7 +143,7 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Request
 
     private void decryptSensitiveFields(Root<ChannelOutResponseBody> root) {
         Envelope envelope = root.getEnvelope();
-        AbstractEncryptDecryptHandler.encrypt(root.getChannelBody(), envelope.getSymmetricKey(), symmetricCryptoFactory.get(envelope.getSymmetricAlgorithm())::decrypt);
+        AbstractEncryptDecryptHandler.decrypt(root.getChannelBody(), envelope.getSymmetricKey(), symmetricCryptoFactory.get(envelope.getSymmetricAlgorithm())::decrypt);
     }
 
 

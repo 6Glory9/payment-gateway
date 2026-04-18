@@ -14,7 +14,7 @@ public class Sm3WithSm2Crypto extends AbstractCrypto implements SignatureCrypto 
     public String sign(String plainText, ChannelMerchant config, String certSn) {
         ChannelCertificate cert = getCertBySn(config, certSn);
         String privateKeyBase64 = cert.getPfxBase64();
-        return new SM2(privateKeyBase64, null).signHex(plainText);
+        return new SM2(privateKeyBase64, null).signHex(HexUtil.encodeHexStr(plainText));
     }
 
     @Override

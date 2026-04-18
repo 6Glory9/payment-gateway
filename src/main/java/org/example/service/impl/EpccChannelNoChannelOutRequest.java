@@ -6,11 +6,11 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
+
 @Setter
 @Getter
 public class EpccChannelNoChannelOutRequest implements Serializable {
-
-
+    
     @JacksonXmlProperty(localName = "InstgId")
     private String institutionId;
 

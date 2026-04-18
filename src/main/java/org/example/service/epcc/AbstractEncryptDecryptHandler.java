@@ -51,6 +51,7 @@ public abstract class AbstractEncryptDecryptHandler {
         // 2. 递归处理嵌套对象、集合、Map
         Field[] allFields = clazz.getDeclaredFields();
         for (Field field : allFields) {
+            field.setAccessible(true);
             Object value = field.get(obj);
             if (value == null) continue;
 
