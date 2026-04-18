@@ -1,6 +1,6 @@
 package org.example.service.security.asymmetric;
 
-import org.example.repository.ChannelMerchant;
+import org.example.service.cache.ChannelMerchant;
 
 /**
  * 非对称加解密（信封专用）

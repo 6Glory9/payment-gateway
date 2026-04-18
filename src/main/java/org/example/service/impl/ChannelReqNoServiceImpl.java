@@ -1,7 +1,7 @@
 package org.example.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import org.example.repository.ChannelMerchant;
+import org.example.service.cache.ChannelMerchant;
 import org.example.service.*;
 import org.example.service.epcc.AbstractEpccChannelService;
 import org.example.service.epcc.Root;

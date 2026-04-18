@@ -1,5 +1,6 @@
 package org.example;
 
+import cn.hutool.core.util.IdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.example.service.GatewayEngine;
 import org.example.service.Request;
@@ -29,6 +30,7 @@ public class Main implements CommandLineRunner {
         log.info("payment-gateway 项目启动成功");
 
         Request upstreamRequest = new Request();
+        upstreamRequest.setMerchantNo(IdUtil.getSnowflakeNextIdStr());
         upstreamRequest.setUpstreamRequestNo("1111");
         upstreamRequest.setChannelCode(EPCC_401_001_01.code());
 

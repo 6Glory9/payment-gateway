@@ -2,9 +2,9 @@ package org.example.service.epcc;
 
 
 import cn.hutool.core.util.TypeUtil;
-import org.example.repository.ChannelMerchant;
-import org.example.repository.Envelope;
-import org.example.repository.MerchantCache;
+import org.example.service.cache.ChannelMerchant;
+import org.example.service.cache.Envelope;
+import org.example.service.cache.MerchantCache;
 import org.example.service.NotifyResultVO;
 import org.example.service.NotifyService;
 import org.example.service.security.asymmetric.AsymmetricCryptoFactory;
@@ -13,7 +13,7 @@ import org.example.service.security.symmetric.SymmetricCryptoFactory;
 import org.example.utils.XMLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractEpccNotifyService<ChannelInRequest, ChannelInResponse> implements NotifyService<ChannelInResponse> {
+public abstract class AbstractEpccNotifyService<ChannelInRequest, ChannelInResponse> implements NotifyService<ChannelInRequest, ChannelInResponse> {
 
     @Autowired
     private MerchantCache merchantCache;
@@ -29,7 +29,7 @@ public abstract class AbstractEpccNotifyService<ChannelInRequest, ChannelInRespo
     private AsymmetricCryptoFactory asymmetricCryptoFactory;
 
 
-    public NotifyResultVO<ChannelInResponse> notify(String issuerId, String httpRequestBody) {
+    public NotifyResultVO<ChannelInRequest, ChannelInResponse> notify(String issuerId, String httpRequestBody) {
 
         ChannelMerchant channelMerchant = merchantCache.getFromChannel(issuerId);
 
@@ -41,7 +41,7 @@ public abstract class AbstractEpccNotifyService<ChannelInRequest, ChannelInRespo
         // 4. 验签（对方会根据 signCertSn 找证书）
         verify(channelInRequestBodyRoot, channelMerchant);
 
-        NotifyResultVO<ChannelInResponse> result = convertToResponse(channelInRequestBodyRoot.getChannelBody());
+        NotifyResultVO<ChannelInRequest, ChannelInResponse> result = convertToResponse(channelInRequestBodyRoot.getChannelBody(),channelMerchant);
 
         //业务
         sendEvent(channelInRequestBodyRoot, result, channelMerchant);
@@ -50,10 +50,10 @@ public abstract class AbstractEpccNotifyService<ChannelInRequest, ChannelInRespo
 
     }
 
-    private void sendEvent(Root<ChannelInRequest> channelInRequestBodyRoot, NotifyResultVO<ChannelInResponse> result, ChannelMerchant channelMerchant) {
+    private void sendEvent(Root<ChannelInRequest> channelInRequestBodyRoot, NotifyResultVO<ChannelInRequest, ChannelInResponse> result, ChannelMerchant channelMerchant) {
     }
 
-    protected abstract NotifyResultVO<ChannelInResponse> convertToResponse(ChannelInRequest channelBody);
+    protected abstract NotifyResultVO<ChannelInRequest, ChannelInResponse> convertToResponse(ChannelInRequest channelInRequest,ChannelMerchant channelMerchant);
 
 
     private void decryptEnvelope(Root<ChannelInRequest> channelOutResponseBodyRoot, ChannelMerchant channelMerchant) {
@@ -72,7 +72,7 @@ public abstract class AbstractEpccNotifyService<ChannelInRequest, ChannelInRespo
 
     private void decryptSensitiveFields(Root<ChannelInRequest> root) {
         Envelope envelope = root.getEnvelope();
-        AbstractEncryptDecryptHandler.encrypt(root.getChannelBody(), envelope.getSymmetricKey(), symmetricCryptoFactory.get(envelope.getSymmetricAlgorithm())::decrypt);
+        AbstractEncryptDecryptHandler.decrypt(root.getChannelBody(), envelope.getSymmetricKey(), symmetricCryptoFactory.get(envelope.getSymmetricAlgorithm())::decrypt);
     }
 
     private Root<ChannelInRequest> parseXmlToChannelModel(String rawRes) {

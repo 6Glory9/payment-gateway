@@ -1,6 +1,6 @@
 package org.example.service.security.sign;
 
-import org.example.repository.ChannelMerchant;
+import org.example.service.cache.ChannelMerchant;
 
 public interface SignatureCrypto {
 

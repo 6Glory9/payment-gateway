@@ -1,7 +1,7 @@
 package org.example.service.security;
 
-import org.example.repository.ChannelCertificate;
-import org.example.repository.ChannelMerchant;
+import org.example.service.cache.ChannelCertificate;
+import org.example.service.cache.ChannelMerchant;
 
 public abstract class AbstractCrypto {
 

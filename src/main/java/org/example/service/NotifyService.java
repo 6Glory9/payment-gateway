@@ -1,7 +1,7 @@
 package org.example.service;
 
 
-public interface NotifyService<ChannelInResponse> {
+public interface NotifyService<ChannelInRequest, ChannelInResponse> {
 
 
     String getChannelCode();
@@ -12,5 +12,5 @@ public interface NotifyService<ChannelInResponse> {
     }
 
 
-    NotifyResultVO<ChannelInResponse> notify(String issuerId, String request);
+    NotifyResultVO<ChannelInRequest,ChannelInResponse> notify(String issuerId, String request);
 }

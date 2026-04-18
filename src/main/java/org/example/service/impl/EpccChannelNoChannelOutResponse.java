@@ -3,18 +3,21 @@ package org.example.service.impl;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.example.service.epcc.EpccChannelOut;
+import org.example.service.Encrypt;
+
+import java.io.Serializable;
 
 
 @Setter
 @Getter
-public class EpccChannelNoChannelOutResponse extends EpccChannelOut {
+public class EpccChannelNoChannelOutResponse implements Serializable {
 
     /**
      * 发起方机构标识
      * 对应XML中的<InstgId>节点，用于标识消息发起方的唯一机构代码
      */
     @JacksonXmlProperty(localName = "InstgId")
+    @Encrypt
     private String institutionId;
 
     /**

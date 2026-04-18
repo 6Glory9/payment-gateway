@@ -1,3 +1,59 @@
 spring:
   main:
     allow-circular-references: true
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+
+
+    druid:
+      url: jdbc:mysql://localhost:3306/scott?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useCursorFetch=true
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      initial-size: 10 #配置初始化大小、最小、最大
+      min-idle: 20
+      max-active: 40
+
+      max-wait: 5000  #配置获取连接等待超时的时间
+
+      min-evictable-idle-time-millis: 600000 # 配置一个连接在池中最小生存的时间，单位是毫秒
+      max-evictable-idle-time-millis: 900000
+
+      test-while-idle: true
+      time-between-eviction-runs-millis: 2000  #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      test-on-borrow: false
+      test-on-return: false
+
+      keep-alive: true
+      keep-alive-between-time-millis: 700000
+      #phy-max-use-count: 1000  #任意一个物理连接最多只能被业务使用 1000次
+      time-between-log-stats-millis: 600000 #十分钟打印统计日志
+
+      filter:
+        slf4j:
+          enabled: true
+          statement-executable-sql-log-enable: true
+          statement-parameter-clear-log-enable: false
+          statement-parameter-set-log-enabled: false
+          statement-prepare-call-after-log-enabled: false
+          statement-prepare-after-log-enabled: false
+          statement-sql-format-option:
+            parameterized: false
+            prettyFormat: false
+            uppCase: false
+        stat:
+          slow-sql-millis: 200
+          db-type: mysql
+          slow-sql-log-level: WARN
+          merge-sql: true
+          log-slow-sql: true
+          enabled: true
+
+logging:
+  level:
+    druid:
+      sql:
+        DataSource: debug
+        Connection: debug
+        Statement: debug
+        ResultSet: debug

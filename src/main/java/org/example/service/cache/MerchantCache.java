@@ -1,4 +1,4 @@
-package org.example.repository;
+package org.example.service.cache;
 
 public interface MerchantCache {
 

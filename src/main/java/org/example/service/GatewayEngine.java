@@ -1,13 +1,15 @@
 package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.repository.InstructionLog;
-import org.example.repository.InstructionRepository;
+import org.example.repository.po.InstructionLogPO;
+import org.example.repository.service.IInstructionLogService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,7 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
     private Map<String, ChannelService<UpstreamRequest, UpstreamData>> mapper;
 
     @Autowired
-    private InstructionRepository instructionRepo; // 持久化层
+    private IInstructionLogService instructionLogService; // 持久化层
 
     @Autowired
     private BizDataAsyncService asyncService;     // 异步业务处理器
@@ -37,11 +39,17 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
         }
 
         // 2. 初始化指令记录
-        InstructionLog logEntry = createInstructionLog(request, channelService);
+        InstructionLogPO logEntry = createInstructionLog(request, channelService);
+
+        try {
+            instructionLogService.save(logEntry);
+        } catch (DuplicateKeyException e) {
+            log.warn("重复的请求的 {}", request.getUpstreamRequestNo());
+            return builderDuplicateResult(request);
+        }
 
         try {
 
-            instructionRepo.save(logEntry);
             // 3. 请求
             PaymentResultVO<UpstreamData> result = channelService.call(request);
 
@@ -52,7 +60,7 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
             return handleException(request, e);
         } finally {
             updateLogEntryTime(logEntry);
-            instructionRepo.update(logEntry);
+            instructionLogService.updateById(logEntry);
             // 7. 异步生成业务数据（解耦对账逻辑）
             asyncService.processBizData(logEntry);
         }
@@ -60,13 +68,21 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
 
     }
 
-    private InstructionLog createInstructionLog(UpstreamRequest request, ChannelService<UpstreamRequest, UpstreamData> channelService) {
-        InstructionLog logEntry = new InstructionLog();
-        logEntry.setInstructionType(channelService.getInstructionType());
+    private PaymentResultVO<UpstreamData> builderDuplicateResult(UpstreamRequest request) {
+        PaymentResultVO<UpstreamData> paymentResultVO = new PaymentResultVO<>();
+        paymentResultVO.setUpstreamRequestNo(request.getUpstreamRequestNo());
+        paymentResultVO.setRequestStatus(RequestStatus.DUPLICATE_REQUEST);
+        return paymentResultVO;
+    }
+
+    private InstructionLogPO createInstructionLog(UpstreamRequest request, ChannelService<UpstreamRequest, UpstreamData> channelService) {
+        InstructionLogPO logEntry = new InstructionLogPO();
+        logEntry.setInstructionType(channelService.getInstructionType().name());
         logEntry.setUpstreamRequestNo(request.getUpstreamRequestNo());
         logEntry.setMerchantNo(request.getMerchantNo());
-        logEntry.setRequestStatus(RequestStatus.SENT);
-        logEntry.setRequestTime(LocalTime.now());
+        logEntry.setRequestStatus(RequestStatus.SENT.name());
+        logEntry.setRequestTime(LocalDateTime.now());
+        logEntry.setChannelCode(request.getChannelCode());
         return logEntry;
     }
 
@@ -79,16 +95,17 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
         return result;
     }
 
-    private void updateLogEntryTime(InstructionLog logEntry) {
-        logEntry.setResponseTime(LocalTime.now());
-        logEntry.setDuration(Duration.between(logEntry.getRequestTime(), logEntry.getResponseTime()).getNano());
+    private void updateLogEntryTime(InstructionLogPO logEntry) {
+        logEntry.setResponseTime(LocalDateTime.now());
+        logEntry.setDuration(Duration.between(logEntry.getRequestTime(), logEntry.getResponseTime()).toMillis());
     }
 
-    private void updateLogEntryWithResult(InstructionLog logEntry, PaymentResultVO<UpstreamData> result) {
+
+    private void updateLogEntryWithResult(InstructionLogPO logEntry, PaymentResultVO<UpstreamData> result) {
         logEntry.setChannelNo(result.getChannelNo());
         logEntry.setChannelBizNo(result.getChannelBizNo());
-        logEntry.setBizStatus(result.getBizStatus());
-        logEntry.setRequestStatus(result.getRequestStatus());
+        logEntry.setBizStatus(result.getBizStatus() != null ? result.getBizStatus().name() : null);
+        logEntry.setRequestStatus(result.getRequestStatus() != null ? result.getRequestStatus().name() : null);
     }
 
 

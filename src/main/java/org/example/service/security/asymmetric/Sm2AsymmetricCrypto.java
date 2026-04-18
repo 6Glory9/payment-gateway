@@ -2,8 +2,8 @@ package org.example.service.security.asymmetric;
 
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.SM2;
-import org.example.repository.ChannelCertificate;
-import org.example.repository.ChannelMerchant;
+import org.example.service.cache.ChannelCertificate;
+import org.example.service.cache.ChannelMerchant;
 import org.example.service.security.AbstractCrypto;
 import org.springframework.stereotype.Component;
 

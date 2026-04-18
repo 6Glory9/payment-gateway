@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.example.repository.Envelope;
+import org.example.service.cache.Envelope;
 
 import java.io.Serializable;
 

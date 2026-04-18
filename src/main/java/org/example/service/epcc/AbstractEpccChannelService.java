@@ -2,9 +2,12 @@ package org.example.service.epcc;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.TypeUtil;
-import org.example.repository.ChannelMerchant;
-import org.example.repository.Envelope;
-import org.example.repository.MerchantCache;
+import org.example.repository.po.InstructionLogExtPO;
+import org.example.repository.service.IInstructionLogExtService;
+import org.example.repository.service.IInstructionLogService;
+import org.example.service.cache.ChannelMerchant;
+import org.example.service.cache.Envelope;
+import org.example.service.cache.MerchantCache;
 import org.example.service.ChannelService;
 import org.example.service.GatewayEngine;
 import org.example.service.PaymentResultVO;
@@ -28,6 +31,9 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Request
 
     @Autowired
     private GatewayEngine<Request, String> gatewayEngine;
+
+    @Autowired
+    private IInstructionLogExtService instructionLogExtService;
 
 
     @Autowired
@@ -111,7 +117,17 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Request
     }
 
     private void sendEvent(UpstreamRequest request, Root<ChannelOutRequestBody> channelOutRequestBodyRoot, Root<ChannelOutResponseBody> channelOutResponseBodyRoot, PaymentResultVO<UpstreamData> result, ChannelMerchant merchant) {
+        InstructionLogExtPO instructionLogExtPO = new InstructionLogExtPO();
+        instructionLogExtPO.setInstructionType(getInstructionType().name());
+        instructionLogExtPO.setMerchantNo(merchant.getMerchantNo());
+        instructionLogExtPO.setUpstreamRequestNo(request.getUpstreamRequestNo());
+        instructionLogExtPO.setChannelCode(request.getChannelCode());
 
+        instructionLogExtPO.setRawReqContent(XMLUtils.toXML(request));
+        instructionLogExtPO.setRawResContent(XMLUtils.toXML(result));
+        instructionLogExtPO.setRawChannelRequestContent(XMLUtils.toXML(channelOutRequestBodyRoot));
+        instructionLogExtPO.setRawChannelResponseContent(XMLUtils.toXML(channelOutResponseBodyRoot));
+        instructionLogExtService.save(instructionLogExtPO);
     }
 
     @NotNull

@@ -2,14 +2,14 @@ package org.example.service;
 
 import cn.hutool.core.util.IdUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.example.repository.InstructionLog;
-import org.example.repository.InstructionRepository;
-import org.example.service.epcc.EpccChannelOut;
+import org.example.repository.po.InstructionLogPO;
+import org.example.repository.service.IInstructionLogService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -18,22 +18,22 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class NotifyGatewayEngine<ChannelInRequest extends EpccChannelOut> implements InitializingBean {
-
-    @Autowired(required = false)
-    private List<NotifyService<ChannelInRequest>> notifyServiceList;
-
-    private Map<String, NotifyService<ChannelInRequest>> mapper;
+public class NotifyGatewayEngine<ChannelInRequest, ChannelInResponse> implements InitializingBean {
 
     @Autowired
-    private InstructionRepository instructionRepo; // 持久化层
+    private List<NotifyService<ChannelInRequest, ChannelInResponse>> notifyServiceList;
+
+    private Map<String, NotifyService<ChannelInRequest, ChannelInResponse>> mapper;
+
+    @Autowired
+    private IInstructionLogService instructionRepo; // 持久化层
 
     @Autowired
     private BizDataAsyncService asyncService;     // 异步业务处理器
 
     public String execute(String issuerId, String messageType, String request) {
         // 1. 寻找匹配渠道
-        NotifyService<ChannelInRequest> notifyService = mapper.get(messageType);
+        NotifyService<ChannelInRequest, ChannelInResponse> notifyService = mapper.get(messageType);
 
         if (notifyService == null) {
             throw new RuntimeException("Unsupported Channel");
@@ -41,40 +41,42 @@ public class NotifyGatewayEngine<ChannelInRequest extends EpccChannelOut> implem
 
 
         // 2. 初始化指令记录
-        InstructionLog logEntry = new InstructionLog();
-        logEntry.setInstructionType(notifyService.getInstructionType());
+        InstructionLogPO logEntry = new InstructionLogPO();
+        logEntry.setInstructionType(notifyService.getInstructionType().name());
         logEntry.setUpstreamRequestNo(IdUtil.getSnowflakeNextIdStr());
-        logEntry.setRequestStatus(RequestStatus.SENT);
-        logEntry.setRequestTime(LocalTime.now());
+        logEntry.setRequestStatus(RequestStatus.SENT.name());
+        logEntry.setRequestTime(LocalDateTime.now());
+        logEntry.setChannelCode(messageType);
         instructionRepo.save(logEntry);
 
         try {
             // 3. 请求
-            NotifyResultVO<ChannelInRequest> result = notifyService.notify(issuerId, request);
+            NotifyResultVO<ChannelInRequest, ChannelInResponse> result = notifyService.notify(issuerId, request);
 
             // 4. 更新状态
             logEntry.setMerchantNo(result.getMerchantNo());
             logEntry.setChannelNo(result.getChannelBizNo());
             logEntry.setChannelBizNo(result.getChannelBizNo());
-            logEntry.setBizStatus(result.getBizStatus());
-            logEntry.setRequestStatus(result.getRequestStatus());
+            logEntry.setBizStatus(result.getBizStatus() != null ? result.getBizStatus().name() : null);
+            logEntry.setRequestStatus(result.getRequestStatus() != null ? result.getRequestStatus().name() : null);
             return result.getXml();
         } catch (Exception e) {
             log.error("{}请求的出现的问题", request, e);
             throw e;
         } catch (Throwable e) {
             log.error("{}请求的出现未知的问题", request, e);
-            logEntry.setRequestStatus(RequestStatus.UNKNOWN);
+            logEntry.setRequestStatus(RequestStatus.UNKNOWN.name());
             logEntry.setBizStatus(null);
             throw e;
         } finally {
-            logEntry.setResponseTime(LocalTime.now());
-            logEntry.setDuration(Duration.between(logEntry.getRequestTime(), logEntry.getResponseTime()).getNano());
+            logEntry.setResponseTime(LocalDateTime.now());
+            logEntry.setDuration(Duration.between(logEntry.getRequestTime(), logEntry.getResponseTime()).toMillis());
             // 6. 保存指令记录
-            instructionRepo.update(logEntry);
+            instructionRepo.updateById(logEntry);
 
         }
     }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
