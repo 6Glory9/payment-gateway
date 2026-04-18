@@ -3,19 +3,24 @@ package org.example;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
+import com.baomidou.mybatisplus.generator.ITableFieldAnnotationHandler;
 import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
 import com.baomidou.mybatisplus.generator.config.OutputFile;
 import com.baomidou.mybatisplus.generator.config.TemplateType;
 import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
+import com.baomidou.mybatisplus.generator.config.po.TableField;
+import com.baomidou.mybatisplus.generator.config.po.TableInfo;
 import com.baomidou.mybatisplus.generator.config.querys.MySqlQuery;
 import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.engine.VelocityTemplateEngine;
 import com.baomidou.mybatisplus.generator.fill.Column;
 import com.baomidou.mybatisplus.generator.keywords.MySqlKeyWordsHandler;
+import com.baomidou.mybatisplus.generator.model.AnnotationAttributes;
 import com.baomidou.mybatisplus.generator.query.SQLQuery;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.List;
 
 public class FastAutoGeneratorTest {
     @Test
@@ -40,8 +45,8 @@ public class FastAutoGeneratorTest {
                             pathInfo(Collections.singletonMap(OutputFile.xml, "src/main/resources/mapper")); // 设置 Mapper XML 文件包名
                 })
                 .strategyConfig(builder -> {
-                    builder.addInclude("t_instruction_log","t_instruction_log_ext").addTablePrefix("t_")// 设置需要生成的表名
-                            .entityBuilder()
+                    builder.addInclude("t_instruction_log", "t_instruction_log_ext").addTablePrefix("t_")// 设置需要生成的表名
+                            .entityBuilder().tableFieldAnnotationHandler(new DefaultTableFieldAnnotationHandlerExt())
                             .enableLombok().idType(IdType.AUTO).formatFileName("%sPO")
                             .addTableFills(new Column("create_time", FieldFill.INSERT))
                             .addTableFills(new Column("update_time", FieldFill.INSERT_UPDATE))

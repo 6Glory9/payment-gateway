@@ -1,7 +1,7 @@
 package org.example.repository.dao;
 
-import org.example.repository.po.InstructionLogExtPO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.example.repository.po.InstructionLogExtPO;
 
 /**
  * <p>
@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author final
- * @since 2026-04-18 11:48:55
+ * @since 2026-04-19 00:09:27
  */
 public interface InstructionLogExtMapper extends BaseMapper<InstructionLogExtPO> {
 

@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -16,10 +18,11 @@ import lombok.Setter;
  * </p>
  *
  * @author final
- * @since 2026-04-18 11:48:55
+ * @since 2026-04-19 00:09:27
  */
 @Getter
 @Setter
+@ToString
 @TableName("t_instruction_log_ext")
 public class InstructionLogExtPO implements Serializable {
 
