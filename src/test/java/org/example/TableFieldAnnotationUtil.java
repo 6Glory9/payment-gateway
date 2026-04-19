@@ -45,7 +45,7 @@ public class TableFieldAnnotationUtil {
                     case "insertStrategy", "updateStrategy", "whereStrategy" ->
                             values.put(key, FieldStrategy.valueOf(val.replace("FieldStrategy.", "")));
                     case "jdbcType" -> values.put("jdbcType", JdbcType.valueOf(val.replace("JdbcType.", "")));
-                    case "typeHandler" -> values.put("typeHandler", Class.forName(val));
+                    case "typeHandler" -> values.put("typeHandler", Class.forName(val.replace(".class", "")));
                     case "javaType" -> values.put("javaType", Boolean.valueOf(val));
                     case "numericScale" -> values.put("numericScale", val);
                 }
@@ -95,7 +95,7 @@ public class TableFieldAnnotationUtil {
     }
 
     // ========================== 内部工具 ==========================
-    private static Map<String, Object> getDefaultValues() {
+    public static Map<String, Object> getDefaultValues() {
         Map<String, Object> map = new HashMap<>();
         map.put("value", "");
         map.put("exist", true);

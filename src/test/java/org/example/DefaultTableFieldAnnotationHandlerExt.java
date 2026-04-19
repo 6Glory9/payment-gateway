@@ -1,7 +1,6 @@
 package org.example;
 
 import cn.hutool.core.lang.Pair;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.generator.DefaultTableFieldAnnotationHandler;
 import com.baomidou.mybatisplus.generator.config.po.TableField;
@@ -12,7 +11,6 @@ import org.apache.ibatis.type.UnknownTypeHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 
 
 //#org.example.common#Money#@TableField(typeHandler = MoneyTypeHandler.class)#commentfdsafsf#
@@ -54,8 +52,9 @@ public class DefaultTableFieldAnnotationHandlerExt extends DefaultTableFieldAnno
             } else if (tableFieldList.size() == 1 && tableFieldList.getFirst().getValue().typeHandler() != UnknownTypeHandler.class) {
                 throw new RuntimeException("typeHandler 已经有值了");
             } else {
-                String displayName = TableFieldMergeUtil.merge(customFieldInfo.getAnnotationStr(), tableFieldList.getFirst().getKey().getDisplayName());
+                String displayName = TableFieldMergeUtil.merge( customFieldInfo.getAnnotationStr(),tableFieldList.getFirst().getKey().getDisplayName());
                 annotationAttributesList.add(new AnnotationAttributes(displayName, com.baomidou.mybatisplus.annotation.TableField.class.getName()));
+                list.remove(tableFieldList.getFirst().getKey());
             }
         }
 

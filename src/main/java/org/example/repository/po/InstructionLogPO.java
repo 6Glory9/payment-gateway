@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.example.utils.MoneyTypeHandler;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author final
- * @since 2026-04-19 00:09:27
+ * @since 2026-04-19 09:10:36
  */
 @Getter
 @Setter
@@ -93,8 +94,7 @@ public class InstructionLogPO implements Serializable {
     /**
      * commentfdsafsf
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.INSERT_UPDATE, typeHandler = MoneyTypeHandler.class)
     private cn.hutool.core.math.Money updateTime;
 
     /**

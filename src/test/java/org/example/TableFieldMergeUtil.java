@@ -1,6 +1,13 @@
 package org.example;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
+import org.apache.ibatis.type.JdbcType;
+
+import java.util.Map;
+
+import static org.example.TableFieldAnnotationUtil.getDefaultValues;
 
 public class TableFieldMergeUtil {
 
@@ -25,22 +32,101 @@ public class TableFieldMergeUtil {
         return TableFieldAnnotationUtil.toCleanString(merged);
     }
 
+    private static <T> T merge2(String fieldName, T base, T override, T defaultValue) {
+        boolean baseIsDefault = base.equals(defaultValue);
+        boolean overrideIsDefault = override.equals(defaultValue);
+
+        // 两个都不是默认 → 冲突报错
+        if (!baseIsDefault && !overrideIsDefault) {
+            throw new IllegalArgumentException("TableField 合并冲突：" + fieldName
+                    + "\nbase = " + base
+                    + "\noverride = " + override
+                    + "\n不能同时配置！");
+        }
+
+        // 否则取非默认的值
+        return overrideIsDefault ? base : override;
+    }
+
     /**
      * 真正的合并逻辑：后面的覆盖前面的
      */
     private static TableField mergeFields(TableField base, TableField override) {
-        // 这里用 Map 手动合并所有属性，保证后面覆盖前面
-        // 你要多少属性我就给你合并多少属性，完整版
+        Map<String, Object> defaultValues = getDefaultValues();
+
+        String value = merge2("value",
+                base.value(),
+                override.value(),
+                (String) defaultValues.get("value"));
+
+        boolean exist = merge2("exist",
+                base.exist(),
+                override.exist(),
+                (boolean) defaultValues.get("exist"));
+
+        boolean select = merge2("select",
+                base.select(),
+                override.select(),
+                (boolean) defaultValues.get("select"));
+
+        FieldFill fill = merge2("fill",
+                base.fill(),
+                override.fill(),
+                (FieldFill) defaultValues.get("fill"));
+
+        FieldStrategy insertStrategy = merge2("insertStrategy",
+                base.insertStrategy(),
+                override.insertStrategy(),
+                (FieldStrategy) defaultValues.get("insertStrategy"));
+
+        FieldStrategy updateStrategy = merge2("updateStrategy",
+                base.updateStrategy(),
+                override.updateStrategy(),
+                (FieldStrategy) defaultValues.get("updateStrategy"));
+
+        FieldStrategy whereStrategy = merge2("whereStrategy",
+                base.whereStrategy(),
+                override.whereStrategy(),
+                (FieldStrategy) defaultValues.get("whereStrategy"));
+
+        JdbcType jdbcType = merge2("jdbcType",
+                base.jdbcType(),
+                override.jdbcType(),
+                (JdbcType) defaultValues.get("jdbcType"));
+
+        Class<?> typeHandler = merge2("typeHandler",
+                base.typeHandler(),
+                override.typeHandler(),
+                (Class<?>) defaultValues.get("typeHandler"));
+
+        boolean javaType = merge2("javaType",
+                base.javaType(),
+                override.javaType(),
+                (boolean) defaultValues.get("javaType"));
+
+        // 拼接注解（保持你原来的格式）
         return TableFieldAnnotationUtil.parse("@TableField("
-                + str("value", base.value(), override.value())
-                + str("fill", base.fill(), override.fill())
-                + str("typeHandler", base.typeHandler(), override.typeHandler())
-                + str("exist", base.exist(), override.exist())
-                + str("select", base.select(), override.select())
-                + str("jdbcType", base.jdbcType(), override.jdbcType())
-                + str("insertStrategy", base.insertStrategy(), override.insertStrategy())
-                + str("updateStrategy", base.updateStrategy(), override.updateStrategy())
+                + str("value", value)
+                + str("exist", exist)
+                + str("select", select)
+                + str("fill", fill.name())
+                + str("insertStrategy", insertStrategy.name())
+                + str("updateStrategy", updateStrategy.name())
+                + str("whereStrategy", whereStrategy.name())
+                + str("jdbcType", jdbcType.name())
+                + str("typeHandler", typeHandler.getName())
+                + str("javaType", javaType)
                 + ")");
+    }
+
+    private static String str(String key, Object value) {
+        if (value == null) return "";
+
+        if (value instanceof Boolean || value instanceof Number) {
+            return key + " = " + value + ", ";
+        }
+
+        return key + " = \"" + value + "\", ";
     }
 
     // 合并工具：不为空/不为默认值则覆盖
