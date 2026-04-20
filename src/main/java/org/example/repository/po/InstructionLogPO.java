@@ -1,5 +1,6 @@
 package org.example.repository.po;
 
+import cn.hutool.core.math.Money;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -8,7 +9,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.example.utils.MoneyTypeHandler;
+import org.example.service.epcc.MessageType;
+import org.example.repository.typeHandler.MoneyTypeHandler;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -19,7 +21,7 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author final
- * @since 2026-04-19 09:10:36
+ * @since 2026-04-20 13:27:47
  */
 @Getter
 @Setter
@@ -92,10 +94,10 @@ public class InstructionLogPO implements Serializable {
     private LocalDateTime createTime;
 
     /**
-     * commentfdsafsf
+     * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE, typeHandler = MoneyTypeHandler.class)
-    private cn.hutool.core.math.Money updateTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 
     /**
      * 渠道服务号
@@ -103,8 +105,13 @@ public class InstructionLogPO implements Serializable {
     private String channelCode;
 
     /**
-     * commentfdsafsf
+     * comment
      */
-    @TableField(typeHandler = org.example.utils.MoneyTypeHandler.class)
-    private cn.hutool.core.math.Money test;
+    @TableField(typeHandler = MoneyTypeHandler.class)
+    private Money testMoney;
+
+    /**
+     * #org.example.service.epcc.MessageType##comment#
+     */
+    private MessageType testEnum;
 }

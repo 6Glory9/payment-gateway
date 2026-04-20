@@ -3,24 +3,18 @@ package org.example;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
-import com.baomidou.mybatisplus.generator.ITableFieldAnnotationHandler;
 import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
 import com.baomidou.mybatisplus.generator.config.OutputFile;
 import com.baomidou.mybatisplus.generator.config.TemplateType;
-import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
-import com.baomidou.mybatisplus.generator.config.po.TableField;
-import com.baomidou.mybatisplus.generator.config.po.TableInfo;
 import com.baomidou.mybatisplus.generator.config.querys.MySqlQuery;
 import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.engine.VelocityTemplateEngine;
 import com.baomidou.mybatisplus.generator.fill.Column;
 import com.baomidou.mybatisplus.generator.keywords.MySqlKeyWordsHandler;
-import com.baomidou.mybatisplus.generator.model.AnnotationAttributes;
 import com.baomidou.mybatisplus.generator.query.SQLQuery;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.List;
 
 public class FastAutoGeneratorTest {
     @Test
@@ -28,7 +22,7 @@ public class FastAutoGeneratorTest {
         // 使用 FastAutoGenerator 快速配置代码生成器
         FastAutoGenerator.create(new DataSourceConfig.Builder("jdbc:mysql://localhost:3306/scott?serverTimezone=GMT%2B8", "root", "root").
                         dbQuery(new MySqlQuery()).keyWordsHandler(new MySqlKeyWordsHandler()).databaseQueryClass(SQLQuery.class).
-                        typeConvert(new MySqlTypeConvert()))
+                        typeConvert(new MySqlTypeConvertExt()))
                 .globalConfig(builder -> {
                     builder.author("final") // 设置作者
                             .disableOpenDir()
@@ -45,14 +39,15 @@ public class FastAutoGeneratorTest {
                             pathInfo(Collections.singletonMap(OutputFile.xml, "src/main/resources/mapper")); // 设置 Mapper XML 文件包名
                 })
                 .strategyConfig(builder -> {
-                    builder.addInclude("t_instruction_log", "t_instruction_log_ext").addTablePrefix("t_")// 设置需要生成的表名
-                            .entityBuilder().tableFieldAnnotationHandler(new DefaultTableFieldAnnotationHandlerExt())
+                    builder.addInclude("t_instruction_log", "t_instruction_log_ext").addTablePrefix("t_");// 设置需要生成的表名
+
+
+                    builder.controllerBuilder().disable();
+
+                    builder.entityBuilder().tableFieldAnnotationHandler(new DefaultTableFieldAnnotationHandlerExt())
                             .enableLombok().idType(IdType.AUTO).formatFileName("%sPO")
                             .addTableFills(new Column("create_time", FieldFill.INSERT))
-                            .addTableFills(new Column("update_time", FieldFill.INSERT_UPDATE))
-
-                            // 启用 Lombok
-                            .enableFileOverride();// 启用字段注解
+                            .addTableFills(new Column("update_time", FieldFill.INSERT_UPDATE)).enableFileOverride();
 
                     builder.serviceBuilder().enableFileOverride();
 

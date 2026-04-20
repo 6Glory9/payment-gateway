@@ -49,6 +49,7 @@ spring:
           log-slow-sql: true
           enabled: true
 
+
 logging:
   level:
     druid:
@@ -57,3 +58,5 @@ logging:
         Connection: debug
         Statement: debug
         ResultSet: debug
+mybatis-plus:
+  type-handlers-package: org.example.repository.typeHandler

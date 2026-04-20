@@ -1,6 +1,6 @@
 package org.example.controller;
 
-import org.example.service.NotifyGatewayEngine;
+import org.example.service.core.notify.NotifyGatewayEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;

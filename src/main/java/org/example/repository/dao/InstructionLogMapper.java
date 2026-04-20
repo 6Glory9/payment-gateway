@@ -9,7 +9,7 @@ import org.example.repository.po.InstructionLogPO;
  * </p>
  *
  * @author final
- * @since 2026-04-19 09:10:36
+ * @since 2026-04-20 13:27:47
  */
 public interface InstructionLogMapper extends BaseMapper<InstructionLogPO> {
 

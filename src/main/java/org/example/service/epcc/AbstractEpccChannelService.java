@@ -4,17 +4,16 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.TypeUtil;
 import org.example.repository.po.InstructionLogExtPO;
 import org.example.repository.service.IInstructionLogExtService;
-import org.example.repository.service.IInstructionLogService;
-import org.example.service.cache.ChannelMerchant;
-import org.example.service.cache.Envelope;
-import org.example.service.cache.MerchantCache;
-import org.example.service.ChannelService;
-import org.example.service.GatewayEngine;
-import org.example.service.PaymentResultVO;
-import org.example.service.Request;
-import org.example.service.security.asymmetric.AsymmetricCryptoFactory;
-import org.example.service.security.sign.SignatureCryptoFactory;
-import org.example.service.security.symmetric.SymmetricCryptoFactory;
+import org.example.repository.cache.ChannelMerchant;
+import org.example.repository.cache.Envelope;
+import org.example.repository.cache.MerchantCache;
+import org.example.service.core.notify.ChannelService;
+import org.example.service.core.GatewayEngine;
+import org.example.service.core.PaymentResultVO;
+import org.example.service.core.Request;
+import org.example.service.epcc.security.asymmetric.AsymmetricCryptoFactory;
+import org.example.service.epcc.security.sign.SignatureCryptoFactory;
+import org.example.service.epcc.security.symmetric.SymmetricCryptoFactory;
 import org.example.utils.HttpClient;
 import org.example.utils.XMLUtils;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +23,7 @@ import org.springframework.http.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.example.service.impl.MessageType.EPCC_401_001_01;
+import static org.example.service.epcc.MessageType.EPCC_401_001_01;
 
 public abstract class AbstractEpccChannelService<UpstreamRequest extends Request, UpstreamData, ChannelOutRequestBody, ChannelOutResponseBody> implements ChannelService<UpstreamRequest, UpstreamData> {
 

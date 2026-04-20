@@ -2,14 +2,14 @@ package org.example;
 
 import cn.hutool.core.util.IdUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.example.service.GatewayEngine;
-import org.example.service.Request;
+import org.example.service.core.GatewayEngine;
+import org.example.service.core.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import static org.example.service.impl.MessageType.EPCC_401_001_01;
+import static org.example.service.epcc.MessageType.EPCC_401_001_01;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.

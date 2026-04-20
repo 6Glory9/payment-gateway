@@ -1,7 +1,7 @@
 package org.example.service.epcc;
 
 import lombok.SneakyThrows;
-import org.example.service.Encrypt;
+import org.example.service.core.Encrypt;
 
 import java.lang.reflect.Field;
 import java.util.*;

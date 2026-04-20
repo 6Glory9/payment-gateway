@@ -18,7 +18,8 @@
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
         <result column="channel_code" property="channelCode" />
-        <result column="test" property="test" />
+        <result column="test_money" property="testMoney" />
+        <result column="test_enum" property="testEnum" />
     </resultMap>
 
 </mapper>
