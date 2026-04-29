@@ -15,7 +15,6 @@ import static org.example.service.epcc.MessageType.EPCC_401_001_01;
 @Service
 public class ChannelReqNoServiceImpl extends AbstractEpccChannelService<Request, String, EpccChannelNoChannelOutRequest, EpccChannelNoChannelOutResponse> {
 
-
     @Override
     public String generateChannelReqNo(Request upstreamRequest) {
         return "N/A" + IdUtil.getSnowflakeNextIdStr();

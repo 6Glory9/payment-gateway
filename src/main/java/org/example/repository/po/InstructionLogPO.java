@@ -9,8 +9,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.example.service.epcc.MessageType;
 import org.example.repository.typeHandler.MoneyTypeHandler;
+import org.example.service.epcc.MessageType;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author final
- * @since 2026-04-20 13:27:47
+ * @since 2026-04-29 14:36:51
  */
 @Getter
 @Setter
@@ -105,7 +105,7 @@ public class InstructionLogPO implements Serializable {
     private String channelCode;
 
     /**
-     * comment
+     * #cn.hutool.core.math.Money#org.example.repository.typeHandler.MoneyTypeHandler#comment#
      */
     @TableField(typeHandler = MoneyTypeHandler.class)
     private Money testMoney;

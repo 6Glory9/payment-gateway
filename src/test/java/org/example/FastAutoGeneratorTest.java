@@ -39,7 +39,7 @@ public class FastAutoGeneratorTest {
                             pathInfo(Collections.singletonMap(OutputFile.xml, "src/main/resources/mapper")); // 设置 Mapper XML 文件包名
                 })
                 .strategyConfig(builder -> {
-                    builder.addInclude("t_instruction_log", "t_instruction_log_ext").addTablePrefix("t_");// 设置需要生成的表名
+                    builder.addInclude("t_instruction_log", "t_instruction_log_ext","seq_generator").addTablePrefix("t_");// 设置需要生成的表名
 
 
                     builder.controllerBuilder().disable();
