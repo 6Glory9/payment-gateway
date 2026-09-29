@@ -39,7 +39,7 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
         }
 
         // 2. 初始化指令记录
-        InstructionLogPO logEntry = createInstructionLog(request, channelService);
+        InstructionLogPO logEntry = initInstructionLog(request, channelService);
 
         try {
             instructionLogService.save(logEntry);
@@ -54,12 +54,12 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
             PaymentResultVO<UpstreamData> result = channelService.call(request);
 
             // 4. 更新状态
-            updateLogEntryWithResult(logEntry, result);
+            setLogEntryWithResult(logEntry, result);
             return result;
         } catch (Throwable e) {
-            return handleException(request, e);
+            return handleException(request, logEntry, e);
         } finally {
-            updateLogEntryTime(logEntry);
+            setLogEntryRunTime(logEntry);
             instructionLogService.updateById(logEntry);
             // 7. 异步生成业务数据（解耦对账逻辑）
             asyncService.processBizData(logEntry);
@@ -75,7 +75,7 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
         return paymentResultVO;
     }
 
-    private InstructionLogPO createInstructionLog(UpstreamRequest request, ChannelService<UpstreamRequest, UpstreamData> channelService) {
+    private InstructionLogPO initInstructionLog(UpstreamRequest request, ChannelService<UpstreamRequest, UpstreamData> channelService) {
         InstructionLogPO logEntry = new InstructionLogPO();
         logEntry.setInstructionType(channelService.getInstructionType().name());
         logEntry.setUpstreamRequestNo(request.getUpstreamRequestNo());
@@ -86,8 +86,11 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
         return logEntry;
     }
 
-    private PaymentResultVO<UpstreamData> handleException(UpstreamRequest request, Throwable e) {
+    private PaymentResultVO<UpstreamData> handleException(UpstreamRequest request, InstructionLogPO instructionLogPO, Throwable e) {
         log.error("{} 请求出现问题，异常类型: {}", request.getUpstreamRequestNo(), e.getClass().getName(), e);
+
+        //设置异常的指令
+        setLogEntryException(instructionLogPO, e);
 
         PaymentResultVO<UpstreamData> result = new PaymentResultVO<>();
         result.setUpstreamRequestNo(request.getUpstreamRequestNo());
@@ -95,13 +98,18 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
         return result;
     }
 
-    private void updateLogEntryTime(InstructionLogPO logEntry) {
+    private void setLogEntryException(InstructionLogPO instructionLogPO, Throwable e) {
+        instructionLogPO.setRequestStatus(RequestStatus.SEND_FAILED.name());
+        instructionLogPO.setBizStatus(BizStatus.FAIL.name());
+    }
+
+    private void setLogEntryRunTime(InstructionLogPO logEntry) {
         logEntry.setResponseTime(LocalDateTime.now());
         logEntry.setDuration(Duration.between(logEntry.getRequestTime(), logEntry.getResponseTime()).toMillis());
     }
 
 
-    private void updateLogEntryWithResult(InstructionLogPO logEntry, PaymentResultVO<UpstreamData> result) {
+    private void setLogEntryWithResult(InstructionLogPO logEntry, PaymentResultVO<UpstreamData> result) {
         logEntry.setChannelNo(result.getChannelNo());
         logEntry.setChannelBizNo(result.getChannelBizNo());
         logEntry.setBizStatus(result.getBizStatus() != null ? result.getBizStatus().name() : null);
