@@ -19,6 +19,9 @@ public class ChannelMerchant implements Serializable {
     //签名的类型
     private String signType = "SM3withSM2";
 
+    //信封加密公钥的序列号
+    private String encryptionSerialNumber;
+
     //信封加解密类型
     private String encryptDigitalEnvelopeType = "RSA";
 
@@ -26,8 +29,6 @@ public class ChannelMerchant implements Serializable {
     private String encryptType = "SM4";
 
     private String signSerialNumber;
-
-    private String encryptionSerialNumber;
 
 
     private Map<String, ChannelCertificate> channelCertificateMapper;

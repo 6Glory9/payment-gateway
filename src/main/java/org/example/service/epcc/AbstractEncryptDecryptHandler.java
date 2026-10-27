@@ -83,7 +83,6 @@ public abstract class AbstractEncryptDecryptHandler {
             for (Field field : currentClass.getDeclaredFields()) {
                 // 只处理：String + @Encrypt + 不重复
                 if (field.getType() == String.class && field.isAnnotationPresent(Encrypt.class) && !fieldNameSet.contains(field.getName())) {
-
                     field.setAccessible(true);
                     fieldList.add(field);
                     fieldNameSet.add(field.getName());

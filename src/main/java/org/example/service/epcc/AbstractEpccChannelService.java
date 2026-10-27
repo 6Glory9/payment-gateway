@@ -18,6 +18,7 @@ import org.example.utils.HttpClient;
 import org.example.utils.XMLUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 
 import java.util.HashMap;
@@ -29,6 +30,7 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Request
 
 
     @Autowired
+    @Lazy
     private GatewayEngine<Request, String> gatewayEngine;
 
     @Autowired
@@ -49,12 +51,15 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Request
     private AsymmetricCryptoFactory asymmetricCryptoFactory;
 
 
+    private String masterMerchantNo = "6777777777";
+
+
     @Override
     public String generateChannelReqNo(UpstreamRequest upstreamRequest) {
         Request request = new Request();
         request.setChannelCode(EPCC_401_001_01.code());
         request.setUpstreamRequestNo(IdUtil.getSnowflakeNextIdStr());
-        // request.setMerchantNo(channelMerchantCache);
+        request.setMerchantNo(masterMerchantNo);
 
         PaymentResultVO<String> resultVO = gatewayEngine.execute(request);
 
@@ -62,15 +67,18 @@ public abstract class AbstractEpccChannelService<UpstreamRequest extends Request
     }
 
     private Root<ChannelOutRequestBody> convertToChannelModel(UpstreamRequest request, ChannelMerchant channelMerchant) {
-        Root<ChannelOutRequestBody> channelOutRequestBodyRoot = new Root<>();
+        //header
         EpccChannelOutRequestHeader header = new EpccChannelOutRequestHeader();
-        header.setEncryptionSerialNumber(channelMerchant.getEncryptionSerialNumber());
-        header.setSignSerialNumber(channelMerchant.getSignSerialNumber());
-        header.setIssuerId(channelMerchant.getIssuerId());
         header.setMessageType(getChannelCode());
-        channelOutRequestBodyRoot.setHeader(header);
+        header.setIssuerId(channelMerchant.getIssuerId());
+        header.setSignSerialNumber(channelMerchant.getSignSerialNumber());
+        header.setEncryptionSerialNumber(channelMerchant.getEncryptionSerialNumber());
 
+
+        Root<ChannelOutRequestBody> channelOutRequestBodyRoot = new Root<>();
+        channelOutRequestBodyRoot.setHeader(header);
         channelOutRequestBodyRoot.setChannelBody(convertToChannelOutRequestBody(request, channelMerchant));
+
         return channelOutRequestBodyRoot;
     }
 

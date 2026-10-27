@@ -1,5 +1,8 @@
 package org.example.service.core;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repository.po.InstructionLogPO;
 import org.example.repository.service.IInstructionLogService;
@@ -13,17 +16,23 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+//@Validated
 public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implements InitializingBean {
 
     @Autowired
     private List<ChannelService<UpstreamRequest, UpstreamData>> channelServiceList;
 
     private Map<String, ChannelService<UpstreamRequest, UpstreamData>> mapper;
+
+
+    @Autowired
+    private Validator validator;
 
     @Autowired
     private IInstructionLogService instructionLogService; // 持久化层
@@ -32,6 +41,8 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
     private BizDataAsyncService asyncService;     // 异步业务处理器
 
     public PaymentResultVO<UpstreamData> execute(UpstreamRequest request) {
+
+        validateBean(request);
         // 1. 寻找匹配渠道
         ChannelService<UpstreamRequest, UpstreamData> channelService = mapper.get(request.getChannelCode());
         if (channelService == null) {
@@ -66,6 +77,16 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
         }
 
 
+    }
+
+    private void validateBean( UpstreamRequest request) {
+        Set<ConstraintViolation<UpstreamRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            String msg = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(";"));
+            throw new RuntimeException("参数校验失败：" + msg);
+        }
     }
 
     private PaymentResultVO<UpstreamData> builderDuplicateResult(UpstreamRequest request) {
@@ -110,7 +131,7 @@ public class GatewayEngine<UpstreamRequest extends Request, UpstreamData> implem
 
 
     private void setLogEntryWithResult(InstructionLogPO logEntry, PaymentResultVO<UpstreamData> result) {
-        logEntry.setChannelNo(result.getChannelNo());
+        logEntry.setChannelNo(result.getChannelNo());//可能存在
         logEntry.setChannelBizNo(result.getChannelBizNo());
         logEntry.setBizStatus(result.getBizStatus() != null ? result.getBizStatus().name() : null);
         logEntry.setRequestStatus(result.getRequestStatus() != null ? result.getRequestStatus().name() : null);

@@ -2,6 +2,7 @@ package org.example.service.core;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 
@@ -12,7 +13,7 @@ public class Request implements Serializable {
 
     private String merchantNo; //根据这个查询静态的信息
 
-
+    @Length(max = 1)
     private String channelCode; //服务码
 
 
